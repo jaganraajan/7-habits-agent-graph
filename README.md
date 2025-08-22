@@ -34,8 +34,16 @@ docker-compose up
 
 Now that LangFuse is running, you need to configure your environment variables for the workshop steps. Start by copying the example env and setup the proper environement variables. 
 
+PowerShell:
+
+```powershell
+copy env.example .env
+```
+
+macOS/Linux:
+
 ```bash
-cp .env.example .env
+cp env.example .env
 ```
 
 ### Environment Variables: What You Need
@@ -45,7 +53,15 @@ Here is a breakdown of the variables needed for the workshop.
 - `LANGFUSE_PUBLIC_KEY` – Your LangFuse project's public API key.
 - `LANGFUSE_SECRET_KEY` – Your LangFuse project's secret API key.
 - `LANGFUSE_HOST` – The URL of your LangFuse instance (e.g., `http://localhost:3000` for local Docker).
-- `OPENAI_API_KEY`
+- `OPENAI_API_KEY` – Key from OpenAI
+
+### Run the demo
+
+After activating the virtual environment and creating `.env` with your keys:
+
+```powershell
+python main.py
+```
 
 ## References
 

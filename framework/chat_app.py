@@ -154,17 +154,24 @@ class ChatApp(App):
         border: solid $primary;
         margin: 1 0;
         overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-size: 1 1;
+        max-height: 80vh;
     }
     
     .input-container {
         height: auto;
+        max-height: 20vh;
         margin: 1 0;
+        overflow-y: auto;
     }
     
     GraphSelector {
         height: auto;
         margin: 1 0;
     }
+    
+
     """
     
     BINDINGS = [

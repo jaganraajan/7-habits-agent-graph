@@ -16,7 +16,7 @@ def build_graph() -> StateGraph:
 
         # create messages
         messages = [
-            SystemMessage(content=system_prompt),
+            SystemMessage(content=system_prompt.prompt),
             HumanMessage(content=state.get("user_message"))
         ]
 

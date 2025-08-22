@@ -1,10 +1,8 @@
-"""Textual-based chat application for LangGraph workflows."""
-
 import asyncio
 import os
 from typing import Optional
 from dotenv import load_dotenv
-from textual.app import App, ComposeResult
+from textual.app import App, ComposeResult              
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import (
     Header, Footer, Input, Button, Static, Select, 
@@ -12,14 +10,12 @@ from textual.widgets import (
 )
 from textual.message import Message
 from textual.reactive import reactive
-from langfuse.langchain import CallbackHandler
+
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from workflows.workflow_registry import registry
-
-# Ensure environment is loaded
-load_dotenv()
+from framework.graph_manager import invoke_graph
 
 
 class ChatMessage(Static):
@@ -121,30 +117,25 @@ class ChatInterface(Container):
                 chat_log.write(f"[bold red]Error building graph: {str(e)}[/bold red]")
                 return
             
-            # Set up Langfuse callback if available
-            try:
-                langfuse_handler = CallbackHandler()
-                callbacks = [langfuse_handler]
-            except Exception:
-                callbacks = []
-            
-            # Run the graph
+            # Run the graph using graph_manager
             result = await asyncio.get_event_loop().run_in_executor(
                 None, 
-                lambda: graph.invoke({
-                    "user_message": message,
-                    "callbacks": callbacks
-                })
+                lambda: invoke_graph(
+                    graph,
+                    {"user_message": message}
+                )
             )
             
             # Display response
             response = result.get("response", "No response generated")
             chat_log.write(f"[bold green]🤖 Assistant:[/bold green] {response}")
             
+
+            
         except Exception as e:
             chat_log.write(f"[bold red]Error:[/bold red] {str(e)}")
 
-
+    
 class ChatApp(App):
     """Main chat application."""
     

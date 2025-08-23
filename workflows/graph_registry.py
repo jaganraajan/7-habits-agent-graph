@@ -7,15 +7,17 @@ from typing import Dict, Any, Callable, List, Optional
 from dataclasses import dataclass
 from pathlib import Path
 from langgraph.graph import StateGraph
+from langgraph.checkpoint.memory import MemorySaver
 
 
 @dataclass
 class GraphInfo:
     """Information about a registered graph."""
     name: str
-    description: str
     build_function: Callable[[], StateGraph]
     module_path: str
+    compiled_graph: Optional[StateGraph] = None
+    checkpointer: Optional[MemorySaver] = None
 
 
 class GraphRegistry:
@@ -66,13 +68,19 @@ class GraphRegistry:
                         # Check if it has a build_graph function
                         if hasattr(module, 'build_graph'):
                             workflow_name = workflow_dir.name
-                            description = self._get_module_description(module)
+                            
+                            # Create a persistent checkpointer for this graph
+                            checkpointer = MemorySaver()
+                            
+                            # Compile the graph immediately with the checkpointer
+                            compiled_graph = module.build_graph().compile(checkpointer=checkpointer)
                             
                             graph_info = GraphInfo(
                                 name=workflow_name,
-                                description=description,
                                 build_function=module.build_graph,
-                                module_path=str(py_file)
+                                module_path=str(py_file),
+                                compiled_graph=compiled_graph,
+                                checkpointer=checkpointer
                             )
                             
                             self._graphs[workflow_name] = graph_info
@@ -85,15 +93,7 @@ class GraphRegistry:
                 import traceback
                 traceback.print_exc()
     
-    def _get_module_description(self, module) -> str:
-        """Extract description from module docstring or build_graph function."""
-        if hasattr(module.build_graph, '__doc__') and module.build_graph.__doc__:
-            return module.build_graph.__doc__.strip().split('.')[0]
-        elif hasattr(module, '__doc__') and module.__doc__:
-            return module.__doc__.strip().split('.')[0]
-        else:
-            return "No description available"
-    
+
     def list_graphs(self) -> List[GraphInfo]:
         """Get a list of all registered graphs."""
         return list(self._graphs.values())
@@ -102,8 +102,21 @@ class GraphRegistry:
         """Get a specific graph by name."""
         return self._graphs.get(name)
     
+    def get_compiled_graph(self, name: str) -> Optional[StateGraph]:
+        """Get a compiled graph by name."""
+        graph_info = self._graphs.get(name)
+        return graph_info.compiled_graph if graph_info else None
+    
+    def get_checkpointer(self, name: str) -> Optional[MemorySaver]:
+        """Get the checkpointer for a specific graph."""
+        graph_info = self._graphs.get(name)
+        return graph_info.checkpointer if graph_info else None
+    
 
 
 
-# Global registry instance
+# Global singleton registry instance
 registry = GraphRegistry()
+
+# Export the singleton registry
+__all__ = ["registry"]

@@ -185,7 +185,7 @@ class ChatApp(App):
     }
     
     .label {
-        margin: 0;
+        margin: 0 0 0 1;
         text-style: bold;
     }
     

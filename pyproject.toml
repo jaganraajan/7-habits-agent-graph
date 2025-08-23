@@ -12,6 +12,7 @@ dependencies = [
     "langfuse>=2.60.5",
     "langgraph>=0.4.5",
     "textual>=0.47.1",
+    "duckduckgo-search>=7.0.0",
 ]
 
 [dependency-groups]

@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, TypedDict
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -7,9 +7,14 @@ from framework.prompt_manager import prompt_manager
 
 PROMPT_KEY = "persona"
 
+# the state that will be passed to each node
+class State(TypedDict):
+    user_message: str
+    response: str
+
 def build_graph() -> StateGraph:
     
-    def chat_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    def chat_node(state: State) -> State:
 
         # get system prompt
         system_prompt = prompt_manager.get_production_prompt(PROMPT_KEY)
@@ -31,7 +36,7 @@ def build_graph() -> StateGraph:
 
 
     # initialize graph
-    graph = StateGraph(dict)
+    graph = StateGraph(State)
 
     # add node
     graph.add_node("chat", chat_node)

@@ -17,3 +17,13 @@ def invoke_graph(
     }
 
     return graph.invoke(input_state, default_config)
+
+
+def build_graph(name: str) -> Optional[StateGraph]:
+    """Build and return a compiled graph by name."""
+    from workflows.workflow_registry import registry
+    
+    graph_info = registry.get_graph(name)
+    if graph_info:
+        return graph_info.build_function().compile()
+    return None

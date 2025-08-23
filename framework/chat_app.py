@@ -15,7 +15,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from workflows.workflow_registry import registry
-from framework.graph_manager import invoke_graph
+from framework.graph_manager import invoke_graph, build_graph
 
 
 class ChatMessage(Static):
@@ -107,15 +107,9 @@ class ChatInterface(Container):
             # Show thinking indicator
             chat_log.write("[dim]🤖 Assistant is thinking...[/dim]")
             
-            # Get the graph
-            try:
-                graph = registry.build_graph(self.current_graph)
-                if not graph:
-                    chat_log.write(f"[bold red]Error: Could not build graph for '{self.current_graph}'![/bold red]")
-                    return
-            except Exception as e:
-                chat_log.write(f"[bold red]Error building graph: {str(e)}[/bold red]")
-                return
+
+            graph = build_graph(self.current_graph)
+
             
             # Run the graph using graph_manager
             result = await asyncio.get_event_loop().run_in_executor(

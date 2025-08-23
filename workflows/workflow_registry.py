@@ -102,12 +102,7 @@ class GraphRegistry:
         """Get a specific graph by name."""
         return self._graphs.get(name)
     
-    def build_graph(self, name: str) -> Optional[StateGraph]:
-        """Build and return a compiled graph by name."""
-        graph_info = self.get_graph(name)
-        if graph_info:
-            return graph_info.build_function().compile()
-        return None
+
 
 
 # Global registry instance

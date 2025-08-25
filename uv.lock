@@ -103,6 +103,18 @@ wheels = [
 ]
 
 [[package]]
+name = "aiohttp-retry"
+version = "2.9.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9d/61/ebda4d8e3d8cfa1fd3db0fb428db2dd7461d5742cea35178277ad180b033/aiohttp_retry-2.9.1.tar.gz", hash = "sha256:8eb75e904ed4ee5c2ec242fefe85bf04240f685391c4879d8f541d6028ff01f1", size = 13608 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1a/99/84ba7273339d0f3dfa57901b846489d2e5c2cd731470167757f1935fffbd/aiohttp_retry-2.9.1-py3-none-any.whl", hash = "sha256:66d2759d1921838256a05a3f80ad7e724936f083e35be5abb5e16eed6be6dc54", size = 9981 },
+]
+
+[[package]]
 name = "aiosignal"
 version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1659,6 +1671,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyjwt"
+version = "2.10.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/46/bd74733ff231675599650d3e47f361794b22ef3e3770998dda30d3b63726/pyjwt-2.10.1.tar.gz", hash = "sha256:3cc5772eb20009233caf06e9d8a0577824723b44e6648ee0a2aedb6cf9381953", size = 87785 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/61/ad/689f02752eeec26aed679477e80e632ef1b682313be70793d798c1d5fc8f/PyJWT-2.10.1-py3-none-any.whl", hash = "sha256:dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb", size = 22997 },
+]
+
+[[package]]
 name = "python-dotenv"
 version = "1.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2189,6 +2210,21 @@ wheels = [
 ]
 
 [[package]]
+name = "twilio"
+version = "9.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "aiohttp-retry" },
+    { name = "pyjwt" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a5/e6/a4f3be1a4536cd64678caf854e9c75d0ab7fb31d329ff10b161211234aba/twilio-9.7.1.tar.gz", hash = "sha256:ade5bc361147b667c3a5ce69be74b5f6c8b8a1176743b90f0a9641e233ffa20c", size = 1040852 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/17/87/dd4fcc6dc88824f4317bb686f4558bba714df91b2fc873b0be4456ca6038/twilio-9.7.1-py2.py3-none-any.whl", hash = "sha256:1f7753431784a1501c3b06c6c8ca8685f8736b28bd11a17eeb96249017b62afb", size = 1897849 },
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.14.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2268,6 +2304,7 @@ dependencies = [
     { name = "langgraph" },
     { name = "python-dotenv" },
     { name = "textual" },
+    { name = "twilio" },
 ]
 
 [package.dev-dependencies]
@@ -2286,6 +2323,7 @@ requires-dist = [
     { name = "langgraph", specifier = ">=0.4.5" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "textual", specifier = ">=0.47.1" },
+    { name = "twilio", specifier = ">=9.7.1" },
 ]
 
 [package.metadata.requires-dev]

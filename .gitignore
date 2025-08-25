@@ -11,3 +11,8 @@ wheels/
 
 # Manually added files
 .env
+
+data/
+logs/
+
+mcp_config.json

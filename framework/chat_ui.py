@@ -12,11 +12,8 @@ from textual.widgets import (
 from textual.message import Message
 from textual.reactive import reactive
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from workflows.graph_registry import registry       
-from framework.graph_manager import invoke_graph, build_graph
+from framework.graph_registry import registry       
+from framework.graph_manager import invoke_graph
 
 
 class ChatMessage(Static):
@@ -50,6 +47,7 @@ class ChatInterface(Container):
     
     current_graph = reactive(None)
     current_thread_id = reactive(None)
+    is_new_thread = reactive(True)
     
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -66,6 +64,7 @@ class ChatInterface(Container):
                 
             # Generate new thread ID for the selected graph
             self.current_thread_id = str(uuid.uuid4())
+            self.is_new_thread = True
                 
             chat_log = self.query_one("#chat_log", RichLog)
             chat_log.clear()
@@ -92,6 +91,7 @@ class ChatInterface(Container):
         
         # Generate new thread ID
         self.current_thread_id = str(uuid.uuid4())
+        self.is_new_thread = True
         
         # Clear chat log
         chat_log = self.query_one("#chat_log", RichLog)
@@ -131,34 +131,26 @@ class ChatInterface(Container):
             # Show thinking indicator
             chat_log.write("[dim]🤖 Assistant is thinking...[/dim]")
             
-            graph = build_graph(self.current_graph)
-
-            # Run the graph using graph_manager with thread_id
-            result = await asyncio.get_event_loop().run_in_executor(
-                None, 
-                lambda: invoke_graph(
-                    graph,
-                    {"user_message": message},
-                    self.current_thread_id
-                )
+            # Use the simplified graph_manager interface
+            response = await invoke_graph(
+                graph_name=self.current_graph,
+                message=message,
+                thread_id=self.current_thread_id,
+                is_new_thread=self.is_new_thread
             )
             
+            # Mark that we're no longer in a new thread
+            if self.is_new_thread:
+                self.is_new_thread = False
+
             # Display response
-            response = result.get("messages", [])
-            if response:
-                response = response[-1].content
-            else:
-                response = "No response generated"
-
             chat_log.write(f"[bold green]🤖 Assistant:[/bold green] {response}")
-
-
             
         except Exception as e:
             chat_log.write(f"[bold red]Error:[/bold red] {str(e)}")
 
     
-class ChatApp(App):
+class ChatUI(App):
     """Main chat application."""
     
     CSS = """
@@ -240,7 +232,7 @@ class ChatApp(App):
         self.sub_title = "Interactive AI Chat with Multiple Workflows"
 
 
-def run_chat_app():
+def run_chat_ui():
     """Run the chat application."""
-    app = ChatApp()
+    app = ChatUI()
     app.run()

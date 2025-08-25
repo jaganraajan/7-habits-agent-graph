@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--mount", "type=bind,source=${MCP_WORKING_DIR},target=/mcp",
+        "mcp/filesystem",
+        "/mcp"
+      ],
+      "env": {
+        "MCP_WORKING_DIR": "${MCP_WORKING_DIR}"
+      }
+    }
+  }
+}

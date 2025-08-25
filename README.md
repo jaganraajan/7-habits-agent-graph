@@ -2,23 +2,43 @@
 
 In this workshop, we'll be looking at a simple LangGraph & Langfuse integration example. We'll touch on basic agents, patterns and observability.
 
-## Requirements
+## Quick Start
 
-### Install the dependencies
-
+### 1. Install Dependencies
 ```bash
 uv sync
 ```
 
-### Activate Virtual Environment
-
-Before running any of the Python scripts, activate the virtual environment:
+### 2. Environment Setup
+Copy the example environment file and configure:
 
 ```bash
-source .venv/bin/activate
+cp env.example .env
 ```
 
-### Install the LangFuse Docker Compose
+Required variables in `.env`:
+- `OPENAI_API_KEY` – Your OpenAI API key
+- `MCP_WORKING_DIR=./data` – Directory for MCP filesystem server (defaults to project root)
+
+Optional (for enhanced capabilities):
+- `PERPLEXITY_API_KEY` – Your Perplexity API key for web search capabilities via custom tool
+- `LANGFUSE_PUBLIC_KEY` – Your LangFuse project's public API key
+- `LANGFUSE_SECRET_KEY` – Your LangFuse project's secret API key  
+- `LANGFUSE_HOST=http://localhost:3000` – LangFuse instance URL
+
+### 3. MCP Configuration
+
+Copy the example mcp_config file and configure:
+
+```bash
+cp mcp_config.example.json mcp_config.json
+```
+The project includes:
+
+1. **Filesystem Server**: Pre-configured and auto-pulls its Docker image when needed. Provides 11 tools for file operations (read, write, edit, search, etc.) that agents can use through natural language.
+
+### 4. LangFuse Setup (Optional)
+For observability and tracing:
 
 ```bash
 git clone git@github.com:langfuse/langfuse.git
@@ -26,40 +46,10 @@ cd langfuse
 docker-compose up
 ```
 
-- Connect to the LangFuse UI at [http://localhost:3000](http://localhost:3000).
-- Sign up for a new account.
-- Create an organisation & a new project.
+Connect to [http://localhost:3000](http://localhost:3000) and create a project for API keys.
 
-### Quick Setup: Environment Files
-
-Now that LangFuse is running, you need to configure your environment variables for the workshop steps. Start by copying the example env and setup the proper environement variables. 
-
-PowerShell:
-
-```powershell
-copy env.example .env
-```
-
-macOS/Linux:
-
+### 5. Run the Demo
 ```bash
-cp env.example .env
-```
-
-### Environment Variables: What You Need
-
-Here is a breakdown of the variables needed for the workshop. 
-
-- `LANGFUSE_PUBLIC_KEY` – Your LangFuse project's public API key.
-- `LANGFUSE_SECRET_KEY` – Your LangFuse project's secret API key.
-- `LANGFUSE_HOST` – The URL of your LangFuse instance (e.g., `http://localhost:3000` for local Docker).
-- `OPENAI_API_KEY` – Key from OpenAI
-
-### Run the demo
-
-After activating the virtual environment and creating `.env` with your keys:
-
-```powershell
 python main.py
 ```
 

@@ -12,7 +12,8 @@ dependencies = [
     "langfuse>=2.60.5",
     "langgraph>=0.4.5",
     "textual>=0.47.1",
-    "duckduckgo-search>=7.0.0",
+    "langchain-mcp-adapters>=0.1.9",
+    "langchain-perplexity>=0.1.2",
 ]
 
 [dependency-groups]

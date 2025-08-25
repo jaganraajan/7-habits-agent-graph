@@ -15,11 +15,18 @@ def _expand(value: str) -> str:
         inner = m.group(1)
         if ":-" in inner:
             var, default = inner.split(":-", 1)
-            return os.getenv(var, default)
-        val = os.getenv(inner)
-        if val is None:
-            raise KeyError(f"Missing env var: {inner}")
-        return val
+            result = os.getenv(var, default)
+        else:
+            val = os.getenv(inner)
+            if val is None:
+                raise KeyError(f"Missing env var: {inner}")
+            result = val
+        
+        # Convert relative paths to absolute paths for Docker bind mounts
+        if result.startswith('./') or result.startswith('../') or (not result.startswith('/') and '/' in result):
+            result = os.path.abspath(result)
+        
+        return result
     return re.sub(r"\$\{([^}]+)\}", repl, value)
 
 

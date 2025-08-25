@@ -9,7 +9,12 @@ In this workshop, we'll be looking at a simple LangGraph & Langfuse integration 
 uv sync
 ```
 
-### 2. Environment Setup
+### 2. Activate Virtual Environment
+```bash
+source .venv/bin/activate
+```
+
+### 3. Environment Setup
 Copy the example environment file and configure:
 
 ```bash
@@ -26,7 +31,7 @@ Optional (for enhanced capabilities):
 - `LANGFUSE_SECRET_KEY` – Your LangFuse project's secret API key  
 - `LANGFUSE_HOST=http://localhost:3000` – LangFuse instance URL
 
-### 3. MCP Configuration
+### 4. MCP Configuration
 
 Copy the example mcp_config file and configure:
 
@@ -37,7 +42,7 @@ The project includes:
 
 1. **Filesystem Server**: Pre-configured and auto-pulls its Docker image when needed. Provides 11 tools for file operations (read, write, edit, search, etc.) that agents can use through natural language.
 
-### 4. LangFuse Setup (Optional)
+### 5. LangFuse Setup (Optional)
 For observability and tracing:
 
 ```bash
@@ -48,7 +53,7 @@ docker-compose up
 
 Connect to [http://localhost:3000](http://localhost:3000) and create a project for API keys.
 
-### 5. Run the Demo
+### 6. Run the Demo
 ```bash
 python main.py
 ```

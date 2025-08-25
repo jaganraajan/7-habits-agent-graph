@@ -2,8 +2,9 @@ import os
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_perplexity import ChatPerplexity
+from langchain_core.tools import tool
 
-
+@tool
 def search_web(search_term: str) -> str:
     """Search the web using Perplexity's API for real-time information.
     

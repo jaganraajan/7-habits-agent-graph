@@ -39,7 +39,6 @@ def build_graph() -> StateGraph:
     ]
     
     def chat_node(state: State, config: RunnableConfig) -> State:
-
         llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(all_tools)
         ai: AIMessage = llm.invoke(state["messages"], config=config)
         

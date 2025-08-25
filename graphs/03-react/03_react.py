@@ -1,25 +1,25 @@
 from operator import add
-from typing import Any, Annotated, Dict, TypedDict
+from typing import Annotated, TypedDict
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import AIMessage, BaseMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
+from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
-from framework.log_service import log
 from framework.prompt_manager import get_prompt
 from framework.decorators import registered_graph
+from framework.mcp_registry import get_mcp_tools
 from tools.get_current_datetime import get_current_datetime
-from framework.mcp_registry import get_mcp_tools, init_mcp_registry
 from tools.search_web import search_web
 from tools.send_sms import send_sms
+from framework.log_service import log
 
 PROMPT_KEY = "03_react"
 
-# the state that will be passed to each node
+
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
@@ -27,44 +27,77 @@ def init_state() -> State:
     system_prompt = get_prompt(PROMPT_KEY)
     return {"messages": [SystemMessage(content=system_prompt)]}
 
+class ReasonOut(BaseModel):
+    observation: str = Field(..., description="What you saw or received (include any new info from last tool result).")
+    suggested_action: str = Field(..., description="One of the available tools or END.")
+    reason: str = Field(..., description="Why that action?")
+
+class AnswerOut(BaseModel):
+    final_answer: str = Field(..., description="Clear, user-facing answer.")
+
 @registered_graph("03-react")
 def build_graph() -> StateGraph:
-    # Get MCP filesystem tools (registry initialized in main.py)
-    filesystem_tools = get_mcp_tools("filesystem")
-    
-    # Combine all tools
-    all_tools = [
-        *filesystem_tools, 
-        get_current_datetime,
-        search_web,
-        send_sms
-    ]
-    
-    def chat_node(state: State, config: RunnableConfig) -> State:
+    try:
+        # Tools
+        filesystem_tools = get_mcp_tools("filesystem")
+        all_tools = [
+            *filesystem_tools,
+            get_current_datetime,
+            search_web,
+            send_sms,
+        ]
 
-        llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(all_tools)
-        ai: AIMessage = llm.invoke(state["messages"], config=config)
-        
-        return {"messages": [ai]}
+        tool_text = "\n".join(f"- {t.name}: {t.description}" for t in all_tools)
 
-    # Create special ToolNode to execute tool calls
-    tool_node = ToolNode(all_tools)
-    
-    # Router function to decide between tools and end
-    def should_call_tool(state: State) -> str:
-        last_message = state["messages"][-1]
-        return "tools" if getattr(last_message, "tool_calls", None) else "end"
+        # Non-act nodes are tool-blind
+        llm_no_tools = ChatOpenAI(model="gpt-4o-mini").bind_tools([], tool_choice="none")
 
-    # initialize graph
-    graph = StateGraph(State)
+        # Structured LLMs
+        reason_llm = llm_no_tools.with_structured_output(ReasonOut)
+        answer_llm = llm_no_tools.with_structured_output(AnswerOut)
 
-    # add nodes
-    graph.add_node("chat", chat_node)
-    graph.add_node("tools", tool_node)
-    
-    # add edges
-    graph.add_edge(START, "chat")
-    graph.add_conditional_edges("chat", should_call_tool, {"tools": "tools", "end": END})
-    graph.add_edge("tools", "chat")   
+        # -------- Nodes --------
+        def reason_node(state: State, config: RunnableConfig) -> State:
+            sys = SystemMessage(content=get_prompt("03_react_reason") + f"\n\nAvailable tools:\n{tool_text}\n")
+            out: ReasonOut = reason_llm.invoke(state["messages"] + [sys], config=config)
 
-    return graph
+            content = (
+                "REASONING\n"
+                f"Observation: {out.observation}\n"
+                f"Suggested Action: {out.suggested_action}\n"
+                f"Reason: {out.reason}"
+            )
+            return {"messages": [AIMessage(content=content)]}
+
+        def act_node(state: State, config: RunnableConfig) -> State:
+            llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(all_tools)
+            ai: AIMessage = llm.invoke(state["messages"], config=config)
+            return {"messages": [ai]}
+
+        def answer_node(state: State, config: RunnableConfig) -> State:
+            sys = SystemMessage(content=get_prompt("03_react_answer"))
+            out: AnswerOut = answer_llm.invoke(state["messages"] + [sys], config=config)
+            return {"messages": [AIMessage(content=out.final_answer)]}
+
+        tool_node = ToolNode(all_tools)
+
+        def should_call_tool(state: State) -> str:
+            last = state["messages"][-1]
+            return "tools" if getattr(last, "tool_calls", None) else "answer"
+
+        graph = StateGraph(State)
+        graph.add_node("reason", reason_node)
+        graph.add_node("act", act_node)
+        graph.add_node("tools", tool_node)
+        graph.add_node("answer", answer_node)
+
+        graph.add_edge(START, "reason")
+        graph.add_edge("reason", "act")
+        graph.add_conditional_edges("act", should_call_tool, {"tools": "tools", "answer": "answer"})
+        graph.add_edge("tools", "reason")
+        graph.add_edge("answer", END)
+
+        return graph
+    except Exception as e:
+        log(f"Error building graph: {e}")
+        return None

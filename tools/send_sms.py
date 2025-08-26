@@ -9,16 +9,16 @@ token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_client = Client(sid, token)
 
 @tool
-def send_sms(to: str, body: str) -> str:
+def send_sms(body: str) -> str:
     """
-    Send an SMS via Twilio.
+    Send an SMS via Twilio to the user currently using the system.
 
     Args:
-        to: Destination phone number in E.164 format (e.g., "+15551234567").
         body: Text message content.
 
     Returns:
         The Twilio Message SID upon success.
     """
-    msg = twilio_client.messages.create(to=to, from_=os.environ["TWILIO_FROM_NUMBER"], body=body)
+    send_to = os.getenv("TWILIO_TO_NUMBER")
+    msg = twilio_client.messages.create(to=send_to, from_=os.environ["TWILIO_FROM_NUMBER"], body=body)
     return msg.sid

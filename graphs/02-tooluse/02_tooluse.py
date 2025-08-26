@@ -28,54 +28,58 @@ def init_state() -> State:
 
 @registered_graph("02-tooluse")
 def build_graph() -> StateGraph:
-    # Get MCP filesystem tools (registry initialized in main.py)
-    filesystem_tools = get_mcp_tools("filesystem")
-    
-    # Combine all tools
-    all_tools = [
-        *filesystem_tools, 
-        get_current_datetime,
-        search_web
-    ]
-    
-    def chat_node(state: State, config: RunnableConfig) -> State:
-        llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(all_tools)
-        ai: AIMessage = llm.invoke(state["messages"], config=config)
+    try:
+        # Get MCP filesystem tools (registry initialized in main.py)
+        filesystem_tools = get_mcp_tools("filesystem")
         
-        return {"messages": [ai]}
+        # Combine all tools
+        all_tools = [
+            *filesystem_tools, 
+            get_current_datetime,
+            search_web
+        ]
+        
+        def chat_node(state: State, config: RunnableConfig) -> State:
+            llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(all_tools)
+            ai: AIMessage = llm.invoke(state["messages"], config=config)
+            
+            return {"messages": [ai]}
 
-    def end_node(state: State, config: RunnableConfig) -> State:
-        llm = ChatOpenAI(model="gpt-4o-mini")
-        ai: AIMessage = llm.invoke(state["messages"] + [AIMessage(content="Provide a final response to the user")], config=config)
+        def end_node(state: State, config: RunnableConfig) -> State:
+            llm = ChatOpenAI(model="gpt-4o-mini")
+            ai: AIMessage = llm.invoke(state["messages"] + [AIMessage(content="Provide a final response to the user")], config=config)
 
-        return {"messages": [ai]}
+            return {"messages": [ai]}
 
-    # Create special ToolNode to execute tool calls
-    tool_node = ToolNode(all_tools)
-    
-    # Router function to decide between tools and end
-    def should_call_tool(state: State) -> str:
-        last_message = state["messages"][-1]
-        return "tools" if getattr(last_message, "tool_calls", None) else "end"
+        # Create special ToolNode to execute tool calls
+        tool_node = ToolNode(all_tools)
+        
+        # Router function to decide between tools and end
+        def should_call_tool(state: State) -> str:
+            last_message = state["messages"][-1]
+            return "tools" if getattr(last_message, "tool_calls", None) else "final"
 
-    # initialize graph
-    graph = StateGraph(State)
+        # initialize graph
+        graph = StateGraph(State)
 
-    # add nodes
-    graph.add_node("chat", chat_node)
-    graph.add_node("tools", tool_node)
-    graph.add_node("end", end_node)
-    
-    # add edges
-    graph.add_edge(START, "chat")
-    graph.add_conditional_edges("chat", should_call_tool, {"tools": "tools", "end": END})
-    graph.add_edge("tools", "end")   
-    graph.add_edge("end", END)
+        # add nodes
+        graph.add_node("chat", chat_node)
+        graph.add_node("tools", tool_node)
+        graph.add_node("final", end_node)
+        
+        # add edges
+        graph.add_edge(START, "chat")
+        graph.add_conditional_edges("chat", should_call_tool, {"tools": "tools", "final": END})
+        graph.add_edge("tools", "final")   
+        graph.add_edge("final", END)
 
-    # Alternatively 
-    # graph.add_edge("tools", "chat")
-    # This would allow the LLM to call tools multiple time in a loop creating the ReAct pattern
-    # LangGraph has a prebuilt graph for this called
-    # agent = create_react_agent(model, tools, checkpointer=memory)
-    
-    return graph
+        # Alternatively 
+        # graph.add_edge("tools", "chat")
+        # This would allow the LLM to call tools multiple time in a loop creating the ReAct pattern
+        # LangGraph has a prebuilt graph for this called
+        # agent = create_react_agent(model, tools, checkpointer=memory)
+        
+        return graph
+    except Exception as e:
+        log(f"Error building graph: {e}")
+        return None

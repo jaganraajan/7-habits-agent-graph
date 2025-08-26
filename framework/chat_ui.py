@@ -36,6 +36,9 @@ class GraphSelector(Container):
         graphs = registry.list_graphs()
         options = [(graph.name, graph.name) for graph in graphs]
         
+        # Sort options alphabetically by name
+        options.sort(key=lambda x: x[0].lower())
+        
         if not options:
             options = [("none", "No workflows found")]
         

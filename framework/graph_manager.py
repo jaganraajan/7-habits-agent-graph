@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Dict, Any, Optional
 from langgraph.graph import StateGraph
 from langgraph.checkpoint.memory import MemorySaver
@@ -10,6 +11,36 @@ from framework.graph_registry import registry
 
 # Cache for compiled graphs
 _compiled_graphs: Dict[str, StateGraph] = {}
+
+
+def _save_graph_diagram(graph_name: str, compiled_graph: StateGraph) -> None:
+    """Save a Mermaid PNG diagram of the graph to its directory."""
+    try:
+        # Get graph info to find the module path
+        graph_info = registry.get_graph_info(graph_name)
+        if not graph_info:
+            print(f"Warning: Could not find graph info for '{graph_name}'")
+            return
+        
+        # Determine the directory where the graph file is located
+        module_parts = graph_info.module_path.split('.')
+        if len(module_parts) >= 3:  # graphs.folder.filename
+            graph_dir = Path(__file__).parent.parent / "graphs" / module_parts[1]
+        else:  # graphs.filename
+            graph_dir = Path(__file__).parent.parent / "graphs"
+        
+        # Create the diagram file path
+        diagram_path = graph_dir / f"{graph_name}_diagram.png"
+        
+        # Generate and save the Mermaid diagram
+        png_data = compiled_graph.get_graph().draw_mermaid_png()
+        with open(diagram_path, 'wb') as f:
+            f.write(png_data)
+        
+        print(f"Graph diagram saved to: {diagram_path}")
+        
+    except Exception as e:
+        print(f"Warning: Could not save diagram for graph '{graph_name}': {e}")
 
 
 def get_compiled_graph(name: str) -> Optional[StateGraph]:
@@ -33,6 +64,9 @@ def get_compiled_graph(name: str) -> Optional[StateGraph]:
         compiled_graph = graph.compile(checkpointer=checkpointer)
         # Cache the compiled graph
         _compiled_graphs[name] = compiled_graph
+        
+        # Save the graph diagram
+        _save_graph_diagram(name, compiled_graph)
         
         return compiled_graph
         

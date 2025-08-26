@@ -14,6 +14,7 @@ from framework.decorators import registered_graph
 from framework.mcp_registry import get_mcp_tools
 from tools.search_web import search_web
 from tools.send_sms import send_sms
+from tools.deep_research import deep_research
 from framework.log_service import log
 from datetime import datetime
 
@@ -36,15 +37,15 @@ class ReasonOut(BaseModel):
 class AnswerOut(BaseModel):
     final_answer: str = Field(..., description="Clear, user-facing answer.")
 
-@registered_graph("03-react")
+@registered_graph("05-subgraphs")
 def build_graph() -> StateGraph:
     try:
         # Tools
         filesystem_tools = get_mcp_tools("filesystem")
         all_tools = [
             *filesystem_tools,
-            search_web,
             send_sms,
+            deep_research,
         ]
 
         tool_text = "\n".join(f"- {t.name}: {t.description}" for t in all_tools)

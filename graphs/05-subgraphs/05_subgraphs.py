@@ -51,8 +51,7 @@ def build_graph() -> StateGraph:
 
         tool_text = "\n".join(f"- {t.name}: {t.description}" for t in all_tools)
 
-        # Non-act nodes are tool-blind
-        llm_no_tools = ChatOpenAI(model="gpt-4o-mini").bind_tools([], tool_choice="none")
+        llm_no_tools = ChatOpenAI(model="gpt-4o-mini")
 
         # Structured LLMs
         reason_llm = llm_no_tools.with_structured_output(ReasonOut)

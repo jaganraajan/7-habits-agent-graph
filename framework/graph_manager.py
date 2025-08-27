@@ -1,11 +1,8 @@
-import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 from langgraph.graph import StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 from langfuse.langchain import CallbackHandler
-from langfuse import Langfuse
-from dotenv import load_dotenv
 
 from framework.graph_registry import registry
 
@@ -113,8 +110,8 @@ async def invoke_graph(
         "callbacks": [langfuse_handler],
         "configurable": {
             "thread_id": thread_id,
-            "recursion_limit": 100
-        }
+        },
+        "recursion_limit": 100
     }
     
     # Invoke the graph

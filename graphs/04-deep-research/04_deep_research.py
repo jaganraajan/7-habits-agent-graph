@@ -39,7 +39,7 @@ def init_state() -> State:
 @registered_graph("04-deep-research")
 def build_graph():
     try:
-        llm_no_tools = ChatOpenAI(model="gpt-4o-mini").bind_tools([], tool_choice="none")
+        llm_no_tools = ChatOpenAI(model="gpt-4o-mini")
         term_planner = llm_no_tools.with_structured_output(SearchTerms)
         synthesizer_llm = llm_no_tools.with_structured_output(Synthesis)
 

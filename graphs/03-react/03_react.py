@@ -14,6 +14,8 @@ from framework.decorators import registered_graph
 from framework.mcp_registry import get_mcp_tools
 from tools.search_web import search_web
 from tools.send_sms import send_sms
+from tools.generate_quickchart import generate_quickchart
+from tools.roll_dice import roll_dice
 from framework.log_service import log
 from datetime import datetime
 
@@ -45,6 +47,8 @@ def build_graph() -> StateGraph:
             *filesystem_tools,
             search_web,
             send_sms,
+            generate_quickchart,
+            roll_dice
         ]
 
         tool_text = "\n".join(f"- {t.name}: {t.description}" for t in all_tools)

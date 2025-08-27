@@ -16,6 +16,7 @@ from tools.get_current_datetime import get_current_datetime
 from framework.mcp_registry import get_mcp_tools
 from tools.search_web import search_web
 from tools.generate_quickchart import generate_quickchart
+from tools.roll_dice import roll_dice
 
 PROMPT_KEY = "02_tooluse"
 
@@ -39,6 +40,7 @@ def build_graph() -> StateGraph:
             get_current_datetime,
             search_web,
             generate_quickchart,
+            roll_dice
         ]
         
         def chat_node(state: State, config: RunnableConfig) -> State:

@@ -45,6 +45,7 @@ def build_graph() -> StateGraph:
         all_tools = [
             *filesystem_tools,
             send_sms,
+            search_web,
             deep_research,
         ]
 

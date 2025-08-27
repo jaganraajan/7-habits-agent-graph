@@ -6,10 +6,10 @@ from langchain_core.tools import tool
 
 @tool
 def search_web(search_term: str) -> str:
-    """Search the web using Perplexity's API for real-time information.
+    """Search the web using Perplexity's Agentic API for real-time information.
     
     Args:
-        search_term: The query or topic to search for on the web
+        search_term: The query or topic to search for on the web. You can be very specific as the agent understands context.
     """
     try:
         # Get API key from environment
@@ -27,7 +27,7 @@ def search_web(search_term: str) -> str:
         # Create messages for the search
         messages = [
             SystemMessage(content="You are a helpful web search assistant. Provide accurate, up-to-date information based on your web search capabilities."),
-            HumanMessage(content=f"Search for and provide information about: {search_term}")
+            HumanMessage(content=f"{search_term}")
         ]
         
         # Perform the search

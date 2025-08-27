@@ -111,7 +111,10 @@ async def invoke_graph(
     langfuse_handler = CallbackHandler()
     config = {
         "callbacks": [langfuse_handler],
-        "configurable": {"thread_id": thread_id}
+        "configurable": {
+            "thread_id": thread_id,
+            "recursion_limit": 100
+        }
     }
     
     # Invoke the graph

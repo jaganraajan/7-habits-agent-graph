@@ -15,10 +15,11 @@ from framework.mcp_registry import get_mcp_tools
 from tools.search_web import search_web
 from tools.send_sms import send_sms
 from tools.deep_research import deep_research
+from tools.generate_quickchart import generate_quickchart
 from framework.log_service import log
 from datetime import datetime
 
-PROMPT_KEY = "03_react"
+PROMPT_KEY = "05_subgraph"
 
 
 class State(TypedDict):
@@ -47,6 +48,7 @@ def build_graph() -> StateGraph:
             send_sms,
             search_web,
             deep_research,
+            generate_quickchart,
         ]
 
         tool_text = "\n".join(f"- {t.name}: {t.description}" for t in all_tools)

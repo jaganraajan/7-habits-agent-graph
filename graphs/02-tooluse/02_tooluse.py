@@ -13,8 +13,9 @@ from framework.log_service import log
 from framework.prompt_manager import get_prompt
 from framework.decorators import registered_graph
 from tools.get_current_datetime import get_current_datetime
-from framework.mcp_registry import get_mcp_tools, init_mcp_registry
+from framework.mcp_registry import get_mcp_tools
 from tools.search_web import search_web
+from tools.generate_quickchart import generate_quickchart
 
 PROMPT_KEY = "02_tooluse"
 
@@ -36,7 +37,8 @@ def build_graph() -> StateGraph:
         all_tools = [
             *filesystem_tools, 
             get_current_datetime,
-            search_web
+            search_web,
+            generate_quickchart,
         ]
         
         def chat_node(state: State, config: RunnableConfig) -> State:

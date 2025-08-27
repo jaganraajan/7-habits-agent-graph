@@ -1,6 +1,8 @@
-# Workshop on LangGraph & LangFuse
+# CLI Agent Graph Sandbox
 
-In this workshop, we'll be looking at a simple LangGraph & Langfuse integration example. We'll touch on basic agents, patterns and observability.
+A fun sandbox to setup and test LangGraph graphs. The sandbox integrates a graph discovery service to surface all registered graphs in the graph/ directory. The graph manager compiles discovered graphs and builds an in memory checkpointer for persisting conversations during runtime. A Textual UI allows for graph selection and multi-turn conversations via the graph with thread management. 
+Tools can be added via the tools/ dir as well as via the mcp_config file. MCP Servers are setup during startup and are made available via the mcp_registry.
+Langfuse is integrated as a callback for observability by the graph_manager. 
 
 ## Quick Start
 

@@ -13,6 +13,19 @@
       "env": {
         "MCP_WORKING_DIR": "${MCP_WORKING_DIR}"
       }
+    },
+    "github": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-e", "GITHUB_TOKEN=${GITHUB_TOKEN}",
+        "mcp/github"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
     }
   }
 }

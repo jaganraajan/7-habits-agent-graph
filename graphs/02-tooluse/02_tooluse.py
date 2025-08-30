@@ -36,11 +36,8 @@ def build_graph() -> StateGraph:
         
         # Combine all tools
         all_tools = [
-            *filesystem_tools, 
-            get_current_datetime,
-            search_web,
+            *filesystem_tools,
             generate_quickchart,
-            roll_dice
         ]
         
         def chat_node(state: State, config: RunnableConfig) -> State:

@@ -26,12 +26,10 @@ def build_graph() -> StateGraph:
     
     def chat_node(state: State, config: RunnableConfig) -> State:
         # Initialize LLM
-        llm = ChatOpenAI(model="gpt-4o-mini")
-        
+        # llm = ChatOpenAI(model="gpt-4o-mini")
+        print('in chat node')
         # Invoke LLM with all messages from state (add_messages handles history)
-        ai: AIMessage = llm.invoke(state["messages"], config=config)
-        
-        # Return only the AI response; add_messages will append it
+        ai = AIMessage(content="This is a demo response from the AI.")
         return {"messages": [ai]}
 
 

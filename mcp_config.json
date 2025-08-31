@@ -26,6 +26,18 @@
       "env": {
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
+    },
+    "vision": {
+      "command": "python",
+      "args": [
+        "mcp_servers/vision/server.py"
+      ],
+      "env": {
+        "AZURE_OPENAI_API_KEY": "${AZURE_OPENAI_API_KEY}",
+        "AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}",
+        "AZURE_OPENAI_DALLE_DEPLOYMENT": "${AZURE_OPENAI_DALLE_DEPLOYMENT:-dall-e-3}",
+        "DATA_DIR": "${MCP_WORKING_DIR}"
+      }
     }
   }
 }

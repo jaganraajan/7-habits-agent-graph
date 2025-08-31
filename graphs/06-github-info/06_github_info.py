@@ -1,8 +1,9 @@
-
+import os
+from dotenv import load_dotenv
 from typing import Annotated, TypedDict
 from langchain_core.messages import AIMessage, BaseMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
@@ -23,12 +24,22 @@ def init_state() -> State:
 
 @registered_graph("06-github-info")
 def build_graph() -> StateGraph:
+    load_dotenv()
     try:
         # Get GitHub MCP tools
         github_tools = get_mcp_tools("github")
         
         def chat_node(state: State, config: RunnableConfig) -> State:
-            llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(github_tools)
+            subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
+            api_version = "2024-12-01-preview"
+
+            # Initialize LLM
+            llm = AzureChatOpenAI(
+                api_key=subscription_key,
+                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+                api_version=api_version,
+                deployment_name="gpt-4o-mini"
+            ).bind_tools(github_tools)
             ai: AIMessage = llm.invoke(state["messages"], config=config)
             return {"messages": [ai]}
 

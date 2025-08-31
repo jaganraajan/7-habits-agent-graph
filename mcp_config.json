@@ -38,6 +38,10 @@
         "AZURE_OPENAI_DALLE_DEPLOYMENT": "${AZURE_OPENAI_DALLE_DEPLOYMENT:-dall-e-3}",
         "DATA_DIR": "${MCP_WORKING_DIR}"
       }
+    },
+    "todo": {
+      "transport": "sse",
+      "url": "http://localhost:3000/mcp"
     }
   }
 }

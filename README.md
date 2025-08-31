@@ -51,7 +51,7 @@ Copy the example mcp_config file and configure:
 ```bash
 cp mcp_config.example.json mcp_config.json
 ```
-The project includes three pre-configured MCP servers:
+The project includes four pre-configured MCP servers:
 
 1. **Filesystem Server**: Pre-configured and auto-pulls its Docker image when needed. Provides 11 tools for file operations (read, write, edit, search, etc.) that agents can use through natural language.
 
@@ -68,6 +68,13 @@ The project includes three pre-configured MCP servers:
    - Supports multiple image sizes (1024x1024, 1792x1024, 1024x1792)
    - Saves images locally for frontend integration
    - Returns both vision text and image URLs
+
+4. **TODO Server**: External HTTP MCP server for task management:
+   - `add_todo_prompt` - Add new TODO items
+   - `list_todos_prompt` - List all TODO items
+   - `complete_todo_prompt` - Mark TODOs as completed
+   - `delete_todo_prompt` - Delete TODO items
+   - Connects to `http://localhost:3000/mcp` via SSE transport
 
 #### GitHub MCP Setup
 
@@ -245,6 +252,139 @@ The vision board agent returns structured data perfect for frontend integration:
 - **Image metadata**: Size, timestamp, and other details
 
 Images are saved in the `./data` directory by default and can be served by your frontend application.
+
+## Using TODO App MCP Integration
+
+The TODO app integration connects to an external MCP server to provide comprehensive task management capabilities. This demonstrates how to integrate with external HTTP-based MCP servers for extended functionality.
+
+### MCP Server Configuration
+
+The TODO app requires an external MCP server running at `http://localhost:3000/mcp`. The server configuration is already included in `mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "todo": {
+      "transport": "sse",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+### Prerequisites
+
+1. **External TODO MCP Server**: You need to have a compatible MCP server running at `http://localhost:3000/mcp` that provides the following tools:
+   - `add_todo_prompt` - Add new TODO items
+   - `list_todos_prompt` - List all TODO items  
+   - `complete_todo_prompt` - Mark TODOs as completed
+   - `delete_todo_prompt` - Delete TODO items
+
+2. **Environment Setup**: Ensure your Azure OpenAI credentials are configured in `.env` for the chat functionality.
+
+### Getting Started with TODO App
+
+1. **Start your TODO MCP Server:**
+   ```bash
+   # Start your external MCP server on port 3000
+   # This should expose an MCP endpoint at http://localhost:3000/mcp
+   ```
+
+2. **Start the Application:**
+   ```bash
+   python main.py
+   ```
+
+3. **Select the TODO App Graph:**
+   - Choose `08-todo-app` from the workflow dropdown
+
+4. **Try Sample Queries:**
+   - Start with: "Show me all my TODO items"
+   - Add items: "Add a new TODO: Buy groceries"
+   - Complete tasks: "Mark TODO item 1 as completed"
+   - Delete items: "Delete TODO item 2"
+
+### Available TODO Operations
+
+The TODO app provides four main operations through natural language:
+
+**Task Management:**
+- `add_todo_prompt` - Add a new TODO item by providing a title
+- `list_todos_prompt` - Retrieve all TODO items
+- `complete_todo_prompt` - Mark a TODO item as completed by ID
+- `delete_todo_prompt` - Delete a TODO item by ID
+
+### Sample Queries
+
+Try these natural language queries with the `08-todo-app` graph:
+
+#### Adding TODOs
+```
+"Add a new TODO: Buy groceries"
+"Create a task: Call dentist for appointment"
+"Add to my list: Review quarterly report"
+```
+
+#### Viewing TODOs
+```
+"Show me all my TODO items"
+"List all my tasks"
+"What do I need to do?"
+```
+
+#### Completing TODOs
+```
+"Mark TODO item 1 as completed"
+"Complete task number 3"
+"Mark the grocery shopping as done"
+```
+
+#### Deleting TODOs
+```
+"Delete TODO item 2"
+"Remove task number 5"
+"Delete the completed grocery task"
+```
+
+### Exported Prompts
+
+The TODO app exports the following prompt definitions (available in `prompts.py`):
+
+```python
+prompts = [
+    {
+        "id": "add_todo_prompt",
+        "label": "Add TODO",
+        "description": "Provide a title for the new TODO item.",
+        "inputExample": {"title": "Buy groceries"}
+    },
+    {
+        "id": "list_todos_prompt",
+        "label": "List TODOs", 
+        "description": "Retrieve the list of all TODO items.",
+        "inputExample": {}
+    },
+    {
+        "id": "complete_todo_prompt",
+        "label": "Complete TODO",
+        "description": "Mark a TODO item as completed by providing its ID.",
+        "inputExample": {"id": 1}
+    },
+    {
+        "id": "delete_todo_prompt",
+        "label": "Delete TODO",
+        "description": "Delete a TODO item by providing its ID.", 
+        "inputExample": {"id": 1}
+    }
+]
+```
+
+### Configuration Notes
+
+- **MCP Server Connection**: Requires external MCP server running on localhost:3000
+- **Transport Protocol**: Uses Server-Sent Events (SSE) for communication
+- **Error Handling**: If the MCP server is unavailable, the graph will gracefully handle errors
+- **Natural Language**: The AI agent interprets natural language requests and maps them to appropriate TODO operations
 
 ## References
 

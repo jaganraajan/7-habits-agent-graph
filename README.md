@@ -28,6 +28,11 @@ Required variables in `.env`:
 - `OPENAI_API_KEY` – Your OpenAI API key
 - `MCP_WORKING_DIR=./data` – Directory for MCP filesystem server (defaults to project root)
 
+**Azure OpenAI Configuration** (for vision board and chat):
+- `AZURE_OPENAI_API_KEY` – Your Azure OpenAI API key
+- `AZURE_OPENAI_ENDPOINT` – Your Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com/)
+- `AZURE_OPENAI_DALLE_DEPLOYMENT` – Your DALL-E deployment name (defaults to "dall-e-3")
+
 Optional (for enhanced capabilities):
 - `PERPLEXITY_API_KEY` – Your Perplexity API key for web search capabilities via custom tool
 - `LANGFUSE_PUBLIC_KEY` – Your LangFuse project's public API key
@@ -46,7 +51,7 @@ Copy the example mcp_config file and configure:
 ```bash
 cp mcp_config.example.json mcp_config.json
 ```
-The project includes two pre-configured MCP servers:
+The project includes three pre-configured MCP servers:
 
 1. **Filesystem Server**: Pre-configured and auto-pulls its Docker image when needed. Provides 11 tools for file operations (read, write, edit, search, etc.) that agents can use through natural language.
 
@@ -57,6 +62,12 @@ The project includes two pre-configured MCP servers:
    - Issue and PR management
    - Repository creation and forking
    - And much more
+
+3. **Vision Server**: Local Python MCP server that provides vision board image generation using Azure OpenAI DALL-E:
+   - `vision/add_with_image` - Generate vision board images from text descriptions
+   - Supports multiple image sizes (1024x1024, 1792x1024, 1024x1792)
+   - Saves images locally for frontend integration
+   - Returns both vision text and image URLs
 
 #### GitHub MCP Setup
 
@@ -185,6 +196,55 @@ Try these natural language queries with the `06-github-info` graph:
 - **Without GITHUB_TOKEN**: Limited to public repository access
 - **With GITHUB_TOKEN**: Full access to your repositories and enhanced API limits
 - **Default Repository**: Commands default to `jaganraajan/7-habits-agent-graph` but can target any repository
+
+## Using Vision Board Image Generation
+
+The `07-vision-board` graph demonstrates Azure OpenAI DALL-E integration for creating inspiring vision board images.
+
+### Azure OpenAI DALL-E Setup
+
+1. **Create Azure OpenAI Resource:**
+   - Go to Azure Portal and create an Azure OpenAI resource
+   - Deploy a DALL-E model (dall-e-3 recommended)
+   - Note your endpoint URL and API key
+
+2. **Configure Environment Variables:**
+   ```bash
+   AZURE_OPENAI_API_KEY=your_azure_openai_api_key
+   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_OPENAI_DALLE_DEPLOYMENT=dall-e-3
+   ```
+
+### Getting Started with Vision Board
+
+1. **Start the Application:**
+   ```bash
+   python main.py
+   ```
+
+2. **Select the Vision Board Graph:**
+   - Choose `07-vision-board` from the workflow dropdown
+
+3. **Try Sample Prompts:**
+   - "Create a vision board showing career success with a corner office, certificates, and achievements"
+   - "Generate an image representing health and fitness goals with running, healthy food, and strength"
+   - "Design a vision for travel dreams with beautiful destinations, airplanes, and adventure scenes"
+   - "Create a family and relationship vision with happy moments, love, and togetherness"
+
+### Available Tools
+
+- **`generate_vision_image`** - Direct tool for quick image generation
+- **`vision/add_with_image`** - MCP tool for vision board entries with metadata
+
+### Frontend Integration
+
+The vision board agent returns structured data perfect for frontend integration:
+- **Vision text**: The original prompt describing the vision
+- **Local image path**: File path for displaying in web applications
+- **Original URL**: Direct DALL-E URL (temporary)
+- **Image metadata**: Size, timestamp, and other details
+
+Images are saved in the `./data` directory by default and can be served by your frontend application.
 
 ## References
 

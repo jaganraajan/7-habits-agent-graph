@@ -1,10 +1,12 @@
+import os
+from dotenv import load_dotenv
 from operator import add
 from typing import Any, Annotated, Dict, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
+# from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
@@ -12,11 +14,7 @@ from langgraph.prebuilt import ToolNode
 from framework.log_service import log
 from framework.prompt_manager import get_prompt
 from framework.decorators import registered_graph
-from tools.get_current_datetime import get_current_datetime
 from framework.mcp_registry import get_mcp_tools
-from tools.search_web import search_web
-from tools.generate_quickchart import generate_quickchart
-from tools.roll_dice import roll_dice
 
 PROMPT_KEY = "02_tooluse"
 
@@ -30,24 +28,44 @@ def init_state() -> State:
 
 @registered_graph("02-tooluse")
 def build_graph() -> StateGraph:
+    load_dotenv()
     try:
         # Get MCP filesystem tools (registry initialized in main.py)
-        filesystem_tools = get_mcp_tools("filesystem")
+        # filesystem_tools = get_mcp_tools("filesystem")
+        github_tools = get_mcp_tools("github")
         
         # Combine all tools
         all_tools = [
-            *filesystem_tools,
-            generate_quickchart,
+            # *filesystem_tools,
+            *github_tools,
         ]
         
         def chat_node(state: State, config: RunnableConfig) -> State:
-            llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(all_tools)
+            subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
+            api_version = "2024-12-01-preview"
+
+            # Initialize LLM
+            llm = AzureChatOpenAI(
+                api_key=subscription_key,
+                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+                api_version=api_version,
+                deployment_name="gpt-4o-mini"
+            ).bind_tools(all_tools)
             ai: AIMessage = llm.invoke(state["messages"], config=config)
             
             return {"messages": [ai]}
 
         def end_node(state: State, config: RunnableConfig) -> State:
-            llm = ChatOpenAI(model="gpt-4o-mini")
+            subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
+            api_version = "2024-12-01-preview"
+
+            # Initialize LLM
+            llm = AzureChatOpenAI(
+                api_key=subscription_key,
+                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+                api_version=api_version,
+                deployment_name="gpt-4o-mini"
+            )
             ai: AIMessage = llm.invoke(state["messages"] + [AIMessage(content="Provide a final response to the user")], config=config)
 
             return {"messages": [ai]}

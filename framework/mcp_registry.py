@@ -40,7 +40,8 @@ class _MCPRegistry:
 
         connections: Dict[str, dict] = {}
         for name, s in cfg.get("mcpServers", {}).items():
-            transport = s.get("transport", "stdio")
+            # Support both 'transport' and 'type' for HTTP-based servers
+            transport = s.get("transport") or ("stdio" if "command" in s else None) or ("streamable_http" if s.get("type") == "http" else None)
             if transport == "stdio":
                 args = [_expand(x) for x in s.get("args", [])]
                 env = {k: _expand(v) for k, v in s.get("env", {}).items()}

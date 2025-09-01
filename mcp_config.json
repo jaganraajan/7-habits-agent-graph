@@ -27,21 +27,13 @@
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
     },
-    "vision": {
-      "command": "python",
-      "args": [
-        "mcp_servers/vision/server.py"
-      ],
-      "env": {
-        "AZURE_OPENAI_API_KEY": "${AZURE_OPENAI_API_KEY}",
-        "AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}",
-        "AZURE_OPENAI_DALLE_DEPLOYMENT": "${AZURE_OPENAI_DALLE_DEPLOYMENT:-dall-e-3}",
-        "DATA_DIR": "${MCP_WORKING_DIR}"
-      }
-    },
     "todo": {
-      "transport": "sse",
-      "url": "http://localhost:3000/mcp"
+      "type": "http",
+      "url": "https://mcp-container-ts.mangoforest-877d65f0.eastus2.azurecontainerapps.io/mcp",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1ZXIiOiJ1cm46YmFyIiwiYXVkaWVuY2UiOiJ1cm46Zm9vIiwiaWQiOiJ1c2VyLWlkLTEyMyIsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsInBlcm1pc3Npb25zIjpbInJlYWQ6dG9kb3MiLCJjcmVhdGU6dG9kb3MiLCJ1cGRhdGU6dG9kb3MiLCJkZWxldGU6dG9kb3MiLCJsaXN0OnRvb2xzIiwiY2FsbDp0b29scyJdLCJpYXQiOjE3NTY3NDI3MjksImV4cCI6MTc1Njc0NjMyOX0.eABQok2l1LrlMWFEBm7nbf9Wrh78AM34xK-TBW8K5_U",
+        "Accept": "text/event-stream"
+      }
     }
   }
 }

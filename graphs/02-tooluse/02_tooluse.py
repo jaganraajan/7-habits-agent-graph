@@ -31,13 +31,15 @@ def build_graph() -> StateGraph:
     load_dotenv()
     try:
         # Get MCP filesystem tools (registry initialized in main.py)
-        # filesystem_tools = get_mcp_tools("filesystem")
-        github_tools = get_mcp_tools("github")
+        # filesystem_tools = get_mcp_tools("filesystem")\
+        todo_tools = get_mcp_tools("todo")
+        # github_tools = get_mcp_tools("github")
         
         # Combine all tools
         all_tools = [
             # *filesystem_tools,
-            *github_tools,
+            # *github_tools,
+            *todo_tools
         ]
         
         def chat_node(state: State, config: RunnableConfig) -> State:

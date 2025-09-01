@@ -48,16 +48,16 @@ def generate_vision_image(
     load_dotenv()
     
     # Get Azure OpenAI configuration
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    api_key = os.getenv("AZURE_OPENAI_DALLE_API_KEY")
+    # endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     deployment_name = os.getenv("AZURE_OPENAI_DALLE_DEPLOYMENT", "dall-e-3")
-    api_version = "2024-02-01"
-    
-    if not api_key or not endpoint:
-        raise ValueError("AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT must be set in environment variables")
-    
+    # api_version = "2024-02-01"
+
     # Construct the Azure OpenAI DALL-E endpoint
-    url = f"{endpoint.rstrip('/')}/openai/deployments/{deployment_name}/images/generations"
+    # url = f"{endpoint.rstrip('/')}/openai/deployments/{deployment_name}/images/generations"
+    url = os.getenv("AZURE_OPENAI_DALLE_ENDPOINT")
+    if not api_key or not url:
+        raise ValueError("AZURE_OPENAI_API_KEY and AZURE_OPENAI_DALLE_ENDPOINT must be set in environment variables")
     
     headers = {
         "Content-Type": "application/json",
@@ -77,7 +77,6 @@ def generate_vision_image(
             url,
             headers=headers,
             json=payload,
-            params={"api-version": api_version},
             timeout=60
         )
         
@@ -98,15 +97,10 @@ def generate_vision_image(
             f.write(img_response.content)
         
         # Return formatted response with both vision text and image info
-        return f"""Vision: {prompt}
-
-Image generated successfully!
-- Local path: {local_path}
-- Original URL: {image_url}
-- Size: {size}
-
-This vision board image can be used in frontend applications by referencing the local path or by re-hosting the image."""
-        
+        return {
+            "content": [f"Image generated for prompt: {prompt}", f"Saved at: {local_path}"],
+            "image_path": str(local_path)
+        }
     except requests.RequestException as e:
         raise RuntimeError(f"Failed to generate vision image: {e}") from e
     except Exception as e:

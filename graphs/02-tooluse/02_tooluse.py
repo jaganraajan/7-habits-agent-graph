@@ -15,6 +15,7 @@ from framework.log_service import log
 from framework.prompt_manager import get_prompt
 from framework.decorators import registered_graph
 from framework.mcp_registry import get_mcp_tools
+from tools.generate_vision_image import generate_vision_image
 
 PROMPT_KEY = "02_tooluse"
 
@@ -40,7 +41,7 @@ def build_graph() -> StateGraph:
             # *filesystem_tools,
             # *github_tools,
             *todo_tools
-        ]
+        ] + [generate_vision_image]  # Add your local tool here
         
         def chat_node(state: State, config: RunnableConfig) -> State:
             subscription_key = os.getenv("AZURE_OPENAI_API_KEY")

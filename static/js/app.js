@@ -1,0 +1,279 @@
+// 7 Habits Agent Graph Web UI JavaScript
+
+class VisionBoardApp {
+    constructor() {
+        this.currentSlide = 0;
+        this.images = [];
+        this.autoplayInterval = null;
+        this.autoplayActive = false;
+        this.currentSessionId = null;
+        
+        this.init();
+    }
+
+    init() {
+        this.initSlideshow();
+        this.initChat();
+        this.bindEvents();
+        this.loadImages();
+        this.startNewChat();
+    }
+
+    initSlideshow() {
+        this.slides = document.querySelectorAll('.slide');
+        this.updateSlideCounter();
+        
+        if (this.slides.length === 0) {
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('autoplayBtn').disabled = true;
+        }
+    }
+
+    initChat() {
+        this.chatMessages = document.getElementById('chatMessages');
+        this.messageInput = document.getElementById('messageInput');
+        this.sendBtn = document.getElementById('sendBtn');
+        this.loadingIndicator = document.getElementById('loadingIndicator');
+        
+        // Enable chat interface once initialized
+        this.messageInput.disabled = false;
+        this.sendBtn.disabled = false;
+    }
+
+    bindEvents() {
+        // Slideshow controls
+        document.getElementById('prevBtn').addEventListener('click', () => this.previousSlide());
+        document.getElementById('nextBtn').addEventListener('click', () => this.nextSlide());
+        document.getElementById('autoplayBtn').addEventListener('click', () => this.toggleAutoplay());
+        document.getElementById('refreshBtn').addEventListener('click', () => this.refreshImages());
+
+        // Chat controls
+        document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
+        document.getElementById('newChatBtn').addEventListener('click', () => this.startNewChat());
+        
+        // Enter key for sending messages
+        this.messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
+        });
+
+        // Auto-refresh images every 30 seconds
+        setInterval(() => this.refreshImages(), 30000);
+    }
+
+    // Slideshow methods
+    showSlide(n) {
+        if (this.slides.length === 0) return;
+        
+        this.slides[this.currentSlide].classList.remove('active');
+        this.currentSlide = (n + this.slides.length) % this.slides.length;
+        this.slides[this.currentSlide].classList.add('active');
+        this.updateSlideCounter();
+    }
+
+    nextSlide() {
+        this.showSlide(this.currentSlide + 1);
+    }
+
+    previousSlide() {
+        this.showSlide(this.currentSlide - 1);
+    }
+
+    toggleAutoplay() {
+        const btn = document.getElementById('autoplayBtn');
+        const icon = btn.querySelector('i');
+        
+        if (this.autoplayActive) {
+            clearInterval(this.autoplayInterval);
+            this.autoplayActive = false;
+            icon.className = 'bi bi-play';
+            btn.innerHTML = '<i class="bi bi-play"></i> Auto';
+        } else {
+            this.autoplayInterval = setInterval(() => this.nextSlide(), 3000);
+            this.autoplayActive = true;
+            icon.className = 'bi bi-pause';
+            btn.innerHTML = '<i class="bi bi-pause"></i> Auto';
+        }
+    }
+
+    updateSlideCounter() {
+        const counter = document.getElementById('imageCounter');
+        if (this.slides.length === 0) {
+            counter.textContent = '0 / 0';
+        } else {
+            counter.textContent = `${this.currentSlide + 1} / ${this.slides.length}`;
+        }
+    }
+
+    async refreshImages() {
+        try {
+            const response = await fetch('/api/images');
+            const data = await response.json();
+            
+            if (data.images.length !== this.images.length) {
+                // Images have changed, reload the page to update slideshow
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error refreshing images:', error);
+        }
+    }
+
+    async loadImages() {
+        try {
+            const response = await fetch('/api/images');
+            const data = await response.json();
+            this.images = data.images;
+        } catch (error) {
+            console.error('Error loading images:', error);
+        }
+    }
+
+    // Chat methods
+    async startNewChat() {
+        try {
+            const response = await fetch('/api/chat/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            this.currentSessionId = data.session_id;
+            
+            // Clear chat messages except welcome message
+            const welcomeMessage = this.chatMessages.querySelector('.assistant-message');
+            this.chatMessages.innerHTML = '';
+            if (welcomeMessage) {
+                this.chatMessages.appendChild(welcomeMessage);
+            }
+            
+            this.addMessage('assistant', 'Hello! I\'m your 7 Habits AI assistant. I can help you with various tasks including creating vision board images. Try asking me to "generate a vision board image" or any other question!');
+            
+        } catch (error) {
+            console.error('Error starting new chat:', error);
+            this.addMessage('assistant', 'Sorry, I encountered an error starting a new chat session. Please try again.');
+        }
+    }
+
+    async sendMessage() {
+        const message = this.messageInput.value.trim();
+        if (!message) return;
+
+        // Disable input while processing
+        this.setInputEnabled(false);
+        this.showLoading(true);
+
+        // Add user message to chat
+        this.addMessage('user', message);
+        this.messageInput.value = '';
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: this.currentSessionId
+                })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.currentSessionId = data.session_id;
+                this.addMessage('assistant', data.response);
+                
+                // Check if message might have generated an image
+                if (this.isImageGenerationMessage(message)) {
+                    // Refresh images after a short delay to allow for image generation
+                    setTimeout(() => this.refreshImages(), 2000);
+                }
+            } else {
+                this.addMessage('assistant', `Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            this.addMessage('assistant', 'Sorry, I encountered an error processing your message. Please try again.');
+        } finally {
+            this.setInputEnabled(true);
+            this.showLoading(false);
+        }
+    }
+
+    isImageGenerationMessage(message) {
+        const imageKeywords = [
+            'add image', 'create image', 'generate image', 'vision board',
+            'dall-e', 'dalle', 'picture', 'photo', 'visual'
+        ];
+        const lowerMessage = message.toLowerCase();
+        return imageKeywords.some(keyword => lowerMessage.includes(keyword));
+    }
+
+    addMessage(type, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}-message`;
+        
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                ${type === 'user' ? '<strong>You:</strong>' : '<strong>AI Assistant:</strong>'} ${this.escapeHtml(content)}
+            </div>
+            <div class="message-time">
+                <small class="text-muted">${timeStr}</small>
+            </div>
+        `;
+        
+        this.chatMessages.appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+
+    setInputEnabled(enabled) {
+        this.messageInput.disabled = !enabled;
+        this.sendBtn.disabled = !enabled;
+    }
+
+    showLoading(show) {
+        this.loadingIndicator.style.display = show ? 'block' : 'none';
+    }
+
+    scrollToBottom() {
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
+
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new VisionBoardApp();
+});
+
+// Handle window resize for responsive layout
+window.addEventListener('resize', () => {
+    // Adjust layout if needed
+});
+
+// Handle visibility change to pause/resume autoplay
+document.addEventListener('visibilitychange', () => {
+    const app = window.visionBoardApp;
+    if (app && app.autoplayActive) {
+        if (document.hidden) {
+            clearInterval(app.autoplayInterval);
+        } else {
+            app.autoplayInterval = setInterval(() => app.nextSlide(), 3000);
+        }
+    }
+});

@@ -1,9 +1,13 @@
 # CLI Agent Graph Sandbox
 
-A fun sandbox to setup and test LangGraph graphs. The sandbox integrates a graph discovery service to surface all registered graphs in the graph/ directory. The graph manager compiles discovered graphs and builds an in memory checkpointer for persisting conversations during runtime. A Textual UI allows for graph selection and multi-turn conversations via the graph with thread management. 
+A fun sandbox to setup and test LangGraph graphs. The sandbox integrates a graph discovery service to surface all registered graphs in the graph/ directory. The graph manager compiles discovered graphs and builds an in memory checkpointer for persisting conversations during runtime. 
+
+**Two Interfaces Available:**
+1. **Textual Terminal UI** - Interactive command-line interface with graph selection and multi-turn conversations
+2. **Flask Web UI** - Modern web interface with vision board slideshow and AI chat features
 
 Tools can be added via the tools/ dir as well as via the mcp_config file. MCP Servers are setup during startup and are made available via the mcp_registry.
-Langfuse is integrated as a callback for observability by the graph_manager. It is also integrated for prompt management, exiting graphs currently require a prompt key. 
+Langfuse is integrated as a callback for observability by the graph_manager. It is also integrated for prompt management, existing graphs currently require a prompt key. 
 
 ## Quick Start
 
@@ -32,6 +36,14 @@ Required variables in `.env`:
 - `AZURE_OPENAI_API_KEY` – Your Azure OpenAI API key
 - `AZURE_OPENAI_ENDPOINT` – Your Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com/)
 - `AZURE_OPENAI_DALLE_DEPLOYMENT` – Your DALL-E deployment name (defaults to "dall-e-3")
+- `AZURE_OPENAI_DALLE_API_KEY` – Your Azure OpenAI DALL-E API key (if different from main API key)
+- `AZURE_OPENAI_DALLE_ENDPOINT` – Your Azure OpenAI DALL-E endpoint URL
+
+**Flask Web UI Configuration** (optional):
+- `FLASK_SECRET_KEY` – Secret key for Flask sessions (defaults to development key)
+- `FLASK_DEBUG=true` – Enable Flask debug mode for development
+- `PORT=5000` – Port for the Flask web server
+- `DATA_DIR=./data` – Directory for vision board images (defaults to ./data)
 
 Optional (for enhanced capabilities):
 - `PERPLEXITY_API_KEY` – Your Perplexity API key for web search capabilities via custom tool
@@ -104,10 +116,77 @@ docker-compose up
 
 Connect to [http://localhost:3000](http://localhost:3000) and create a project for API keys.
 
-### 6. Run the Demo
+### 6. Run the Application
+
+#### Option 1: Terminal UI (Original Interface)
 ```bash
 python main.py
 ```
+
+#### Option 2: Flask Web UI (New Web Interface)
+```bash
+python web_app.py
+```
+
+Then open your browser to [http://localhost:5000](http://localhost:5000)
+
+## Flask Web UI Features
+
+![Flask Web UI Screenshot](https://github.com/user-attachments/assets/9b2e369e-5008-4a01-a597-7bbd1c25fae9)
+
+The Flask web application provides a modern web interface with two main features:
+
+### 1. Vision Board Images Slideshow
+- **Automatic Display**: Shows all images from the `data/` directory as an interactive slideshow
+- **Navigation Controls**: Previous/Next buttons, image counter, and auto-play functionality
+- **Real-time Updates**: Automatically refreshes to show newly generated images
+- **Image Metadata**: Displays filename and creation timestamp for each image
+- **Responsive Design**: Works on desktop and mobile devices
+
+**Slideshow Controls:**
+- ← → **Navigation buttons**: Move between images manually
+- **Auto button**: Enable/disable automatic slideshow (3-second intervals)
+- **Refresh button**: Manually check for new images
+- **Image counter**: Shows current position (e.g., "2 / 3")
+
+### 2. AI Chat Interface
+- **Real-time Chat**: Interact with the 02-tooluse agent graph through a web interface
+- **Vision Board Integration**: When you ask to create images, they automatically appear in the slideshow
+- **Session Management**: Maintains conversation context within each chat session
+- **New Chat**: Start fresh conversations anytime
+- **Error Handling**: Graceful handling of configuration issues with helpful error messages
+
+**Chat Features:**
+- Message history for each session
+- Timestamps for all messages
+- Loading indicators during AI processing
+- Automatic detection of image generation requests
+- Integration with existing LangGraph framework
+
+### Key Integration Points
+
+**New Image Priority**: When the AI generates a new vision board image (via prompts like "create a vision board image" or "add image"), the newly created image automatically appears first in the slideshow, making it immediately visible.
+
+**Reuses Existing Infrastructure**: The Flask app integrates with:
+- Existing `framework/graph_manager.py` for chat processing
+- Existing `tools/generate_vision_image.py` for image generation
+- Existing MCP registry and configuration system
+- Same environment variables and Azure OpenAI setup
+
+### Usage Examples
+
+1. **Generate Vision Board Images**:
+   - Type: "Create a vision board image of career success"
+   - The AI will generate an image and save it to the data/ folder
+   - The new image appears first in the slideshow automatically
+
+2. **Browse Existing Images**:
+   - Use navigation controls to browse through existing vision board images
+   - Enable auto-play to cycle through images automatically
+
+3. **Ask Questions**:
+   - Type any question to interact with the AI assistant
+   - The same 02-tooluse agent graph powers both terminal and web interfaces
 
 ## Using GitHub MCP Integration
 

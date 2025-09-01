@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7 Habits Agent Graph - Vision Board & Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-diagram-3"></i> 7 Habits Agent Graph
+            </span>
+            <div class="navbar-text">
+                Vision Board & AI Chat Interface
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <!-- Vision Board Section -->
+            <div class="col-md-6 vision-board-section">
+                <div class="section-header">
+                    <h3><i class="bi bi-images"></i> Vision Board</h3>
+                    <div class="slideshow-controls">
+                        <button id="prevBtn" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <span id="imageCounter" class="mx-2">0 / 0</span>
+                        <button id="nextBtn" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                        <button id="autoplayBtn" class="btn btn-outline-primary btn-sm ms-2">
+                            <i class="bi bi-play"></i> Auto
+                        </button>
+                        <button id="refreshBtn" class="btn btn-outline-success btn-sm ms-1">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="slideshow-container">
+                    <div id="imageSlideshow" class="image-slideshow">
+                        {% if images %}
+                            {% for image in images %}
+                            <div class="slide {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
+                                <img src="{{ url_for('serve_image', filename=image.filename) }}" 
+                                     alt="Vision Board Image" class="slide-image">
+                                <div class="slide-caption">
+                                    <small>{{ image.filename }}</small>
+                                    <br>
+                                    <small class="text-muted">Created: {{ image.created[:19] }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-images">
+                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                                <p class="text-muted mt-3">No vision board images yet.</p>
+                                <p class="text-muted">Try asking the AI to create one for you!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface Section -->
+            <div class="col-md-6 chat-section">
+                <div class="section-header">
+                    <h3><i class="bi bi-chat-dots"></i> AI Chat Interface</h3>
+                    <div class="chat-controls">
+                        <button id="newChatBtn" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-plus-circle"></i> New Chat
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message assistant-message">
+                            <div class="message-content">
+                                <strong>AI Assistant:</strong> Hello! I'm your 7 Habits AI assistant. I can help you with various tasks including creating vision board images. Try asking me to "generate a vision board image" or any other question!
+                            </div>
+                            <div class="message-time">
+                                <small class="text-muted">Just now</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <div class="input-group">
+                            <input type="text" id="messageInput" class="form-control" 
+                                   placeholder="Type your message... (e.g., 'create a vision board image of success')"
+                                   disabled>
+                            <button id="sendBtn" class="btn btn-primary" disabled>
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                        <div id="loadingIndicator" class="text-center mt-2" style="display: none;">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="ms-2">AI is thinking...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

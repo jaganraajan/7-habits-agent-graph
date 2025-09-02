@@ -10,6 +10,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from framework.decorators import registered_graph
+
 from framework.mcp_registry import get_mcp_tools
 from framework.prompt_manager import get_prompt
 from framework.log_service import log
@@ -18,28 +19,15 @@ from framework.log_service import log
 PROMPT_KEY = "habit4567_summary"
 
 # the state that will be passed to each node
+
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     github_results: dict
     summary: str
 
+
 def init_state() -> State:
-    system_prompt = get_prompt(PROMPT_KEY) or """You are a collaborative GitHub research assistant for the 7 Habits Agent Graph. 
-Your mission is to research collaborative development patterns, learning resources, and growth opportunities aligned with Habits 4-7.
-
-Focus on:
-Habit 4 - Win-Win: Collaborative issues, reviews, mutual tasks, consensus-building
-Habit 5 - Seek First to Understand: Review analysis, discussion threads, ADR documentation  
-Habit 6 - Synergize: Multi-tool/repo integration, collaborative examples, cross-functional work
-Habit 7 - Sharpen the Saw: Learning backlog, new releases, growth tasks, skill development
-
-Research and identify:
-1. Collaborative development patterns and win-win solutions
-2. Code review practices and discussion analysis techniques
-3. Integration examples across tools and repositories
-4. Learning resources, new releases, and growth opportunities
-5. Summarizing findings in a clear, actionable format for continuous improvement"""
-    
+    system_prompt = get_prompt(PROMPT_KEY) or """You are a collaborative GitHub research assistant for the 7 Habits Agent Graph.\nYour mission is to research collaborative development patterns, learning resources, and growth opportunities aligned with Habits 4-7.\n\nFocus on:\nHabit 4 - Win-Win: Collaborative issues, reviews, mutual tasks, consensus-building\nHabit 5 - Seek First to Understand: Review analysis, discussion threads, ADR documentation\nHabit 6 - Synergize: Multi-tool/repo integration, collaborative examples, cross-functional work\nHabit 7 - Sharpen the Saw: Learning backlog, new releases, growth tasks, skill development\n\nResearch and identify:\n1. Collaborative development patterns and win-win solutions\n2. Code review practices and discussion analysis techniques\n3. Integration examples across tools and repositories\n4. Learning resources, new releases, and growth opportunities\n5. Summarizing findings in a clear, actionable format for continuous improvement"""
     return {
         "messages": [SystemMessage(content=system_prompt)],
         "github_results": {},
@@ -50,32 +38,18 @@ Research and identify:
 def build_graph() -> StateGraph:
     load_dotenv()
     try:
-        # Get MCP tools
         github_tools = get_mcp_tools("github")
-        filesystem_tools = get_mcp_tools("filesystem") 
-        todo_tools = get_mcp_tools("todo")
-        
-        # Combine all tools
-        all_tools = [
-            *github_tools,
-            *filesystem_tools,
-            *todo_tools
-        ]
-        
+
         def research_node(state: State, config: RunnableConfig) -> State:
             """Research GitHub repositories for Habits 4-7 content"""
             subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
             api_version = "2024-12-01-preview"
-
-            # Initialize LLM with tools
             llm = AzureChatOpenAI(
                 api_key=subscription_key,
                 azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
                 api_version=api_version,
                 deployment_name="gpt-4o-mini"
-            ).bind_tools(github_tools)
-            
-            # Create research prompt
+            )
             research_prompt = """
 Research and analyze repositories and patterns related to the following 7 Habits:
 
@@ -85,7 +59,7 @@ HABIT 4 - WIN-WIN: Collaborative Development
 - Find examples of successful code reviews that show mutual benefit
 - Identify repositories with great contributor onboarding processes
 
-HABIT 5 - SEEK FIRST TO UNDERSTAND: Review & Discussion Analysis  
+HABIT 5 - SEEK FIRST TO UNDERSTAND: Review & Discussion Analysis
 - Search for repositories with excellent code review discussions
 - Look for ADR (Architecture Decision Records) and RFC processes
 - Find issues with thoughtful discussion threads and understanding-first approaches
@@ -107,27 +81,20 @@ Use search_repositories, search_code, and search_issues to find relevant content
 Use get_file_contents to examine specific documentation like CONTRIBUTING.md, ADRs, and READMEs.
 Focus on finding concrete examples and patterns that demonstrate these habits in action.
 """
-            
-            # Add research prompt to messages
             research_message = SystemMessage(content=research_prompt)
             ai: AIMessage = llm.invoke(state["messages"] + [research_message], config=config)
-            
             return {"messages": [ai]}
 
         def synthesize_node(state: State, config: RunnableConfig) -> State:
             """Synthesize research results into a summary for Habits 4-7"""
             subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
             api_version = "2024-12-01-preview"
-
-            # Initialize LLM without tools for summary generation
             llm = AzureChatOpenAI(
                 api_key=subscription_key,
                 azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
                 api_version=api_version,
                 deployment_name="gpt-4o-mini"
             )
-            
-            # Create synthesis prompt
             synthesis_prompt = f"""Based on the research conducted, create a comprehensive markdown summary for Habits 4-7 covering collaborative and growth-focused development practices.
 
 Structure the summary as follows:
@@ -141,7 +108,7 @@ Structure the summary as follows:
 ### Top Collaborative Repositories
 [List repositories with excellent collaborative practices and mutual benefit approaches]
 
-### Win-Win Code Review Examples  
+### Win-Win Code Review Examples
 [Document specific examples of reviews that created mutual benefit]
 
 ### Consensus Building Patterns
@@ -188,7 +155,7 @@ Structure the summary as follows:
 ### Immediate Actions (This Week)
 [3 specific actions to implement collaborative and learning practices]
 
-### Medium-term Goals (This Month)  
+### Medium-term Goals (This Month)
 [3 goals for building better collaborative and learning systems]
 
 ### Long-term Growth (This Quarter)
@@ -198,127 +165,36 @@ Structure the summary as follows:
 
 Focus on concrete, actionable insights that promote collaboration, understanding, synergy, and continuous learning. Provide specific examples with repository links where possible.
 """
-            
             synthesis_message = SystemMessage(content=synthesis_prompt)
             ai: AIMessage = llm.invoke(state["messages"] + [synthesis_message], config=config)
-            
             return {
                 "messages": [ai],
                 "summary": ai.content
             }
 
         def save_summary_node(state: State, config: RunnableConfig) -> State:
-            """Save the summary to markdown file using Filesystem MCP"""
-            subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
-            api_version = "2024-12-01-preview"
+            summary = state.get("summary", "")
+            output_path = os.path.join("data", "habits", "habit4567_summary.md")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(summary)
+            return state
 
-            # Initialize LLM with filesystem tools
-            llm = AzureChatOpenAI(
-                api_key=subscription_key,
-                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-                api_version=api_version,
-                deployment_name="gpt-4o-mini"
-            ).bind_tools(filesystem_tools)
-            
-            # Create save prompt
-            save_prompt = f"""Save the following content to the file 'data/habits/habit4567_summary.md':
-
-{state['summary']}
-
-Use the write_file tool to save this content. Make sure the directory structure exists."""
-            
-            save_message = SystemMessage(content=save_prompt)
-            ai: AIMessage = llm.invoke([save_message], config=config)
-            
-            return {"messages": [ai]}
-
-        def add_todos_node(state: State, config: RunnableConfig) -> State:
-            """Optionally add top action items to TODO list"""
-            if not todo_tools:
-                log("TODO tools not available, skipping TODO creation")
-                return {"messages": [AIMessage(content="TODO integration not available")]}
-                
-            subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
-            api_version = "2024-12-01-preview"
-
-            # Initialize LLM with TODO tools
-            llm = AzureChatOpenAI(
-                api_key=subscription_key,
-                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-                api_version=api_version,
-                deployment_name="gpt-4o-mini"
-            ).bind_tools(todo_tools)
-            
-            # Create TODO prompt
-            todo_prompt = f"""Extract the most important action items from this collaborative growth summary and add them to the TODO list:
-
-{state['summary']}
-
-Focus on immediate actions that promote:
-- Collaborative win-win approaches (Habit 4)
-- Better understanding and listening practices (Habit 5)  
-- Synergistic tool/process integration (Habit 6)
-- Continuous learning and skill sharpening (Habit 7)
-
-Create specific, actionable TODO items with appropriate priorities. Use the add_todo_prompt tool for each item."""
-            
-            todo_message = SystemMessage(content=todo_prompt)
-            ai: AIMessage = llm.invoke([todo_message], config=config)
-            
-            return {"messages": [ai]}
-
-        # Create tool node for all tools
-        tool_node = ToolNode(all_tools)
-        
-        # Router functions
-        def should_call_tool(state: State) -> str:
-            last_message = state["messages"][-1]
-            if getattr(last_message, "tool_calls", None):
-                return "tools"
-            else:
-                # Check which stage we're in based on message content
-                content = last_message.content.lower()
-                if "research" in content or len(state["messages"]) <= 2:
-                    return "synthesize"
-                elif "summary" in content or state.get("summary"):
-                    return "save"
-                else:
-                    return "todos"
-
-        def after_save_routing(state: State) -> str:
-            # After saving, optionally add to TODO list
-            return "todos"
+        # ToolNode handles tool calls
+        tool_node = ToolNode(tools=github_tools)
 
         # Build the graph
         graph = StateGraph(State)
-        
-        # Add nodes
         graph.add_node("research", research_node)
         graph.add_node("tools", tool_node)
         graph.add_node("synthesize", synthesize_node)
         graph.add_node("save", save_summary_node)
-        graph.add_node("todos", add_todos_node)
-        
-        # Add edges
         graph.add_edge(START, "research")
-        graph.add_conditional_edges("research", should_call_tool, {
-            "tools": "tools",
-            "synthesize": "synthesize"
-        })
-        graph.add_edge("tools", "research")  # Loop back for more tool usage
+        graph.add_edge("research", "tools")
+        graph.add_edge("tools", "synthesize")
         graph.add_edge("synthesize", "save")
-        graph.add_conditional_edges("save", should_call_tool, {
-            "tools": "tools",
-            "todos": "todos"
-        })
-        graph.add_conditional_edges("todos", should_call_tool, {
-            "tools": "tools",
-            "end": END
-        })
-        graph.add_edge("todos", END)
-        
+        graph.add_edge("save", END)
         return graph
-        
     except Exception as e:
         log(f"Error building habit4567-summary graph: {e}")
         return None

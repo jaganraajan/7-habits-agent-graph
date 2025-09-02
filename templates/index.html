@@ -64,6 +64,52 @@
                         {% endif %}
                     </div>
                 </div>
+                
+                <!-- GitHub Activity Section -->
+                <div class="github-activity-section mt-4">
+                    <div class="section-header">
+                        <h4><i class="bi bi-github"></i> Recent GitHub Activity</h4>
+                        <button id="refreshGitHubBtn" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                    
+                    <div class="github-content">
+                        <div id="githubLoading" class="text-center py-3" style="display: none;">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="ms-2">Fetching GitHub data...</span>
+                        </div>
+                        
+                        <div id="githubError" class="alert alert-warning d-none" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Unable to load GitHub activity. Please try again later.
+                        </div>
+                        
+                        <div id="githubContent" class="github-scroll-container">
+                            <!-- Commits Section -->
+                            <div class="commits-section mb-3">
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-git"></i> Recent Commits
+                                </h6>
+                                <div id="commitsList" class="activity-list">
+                                    <!-- Commits will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <!-- Pull Requests Section -->
+                            <div class="prs-section">
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-arrow-up-right"></i> Pull Requests
+                                </h6>
+                                <div id="prsList" class="activity-list">
+                                    <!-- PRs will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Chat Interface Section -->

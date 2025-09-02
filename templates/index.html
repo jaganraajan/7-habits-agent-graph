@@ -65,6 +65,28 @@
                     </div>
                 </div>
                 
+                <!-- Todo Section -->
+                <div class="todo-section mt-4">
+                    <div class="section-header">
+                        <h4><i class="bi bi-list-task"></i> Todo List</h4>
+                        <button id="refreshTodoBtn" class="btn btn-outline-success btn-sm ms-2">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="todoLoading" class="text-center py-2" style="display: none;">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="ms-2">Loading todos...</span>
+                    </div>
+                    <div id="todoError" class="alert alert-warning d-none" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Unable to load todos. Please try again later.
+                    </div>
+                    <ul id="todoList" class="list-group mt-2">
+                        <!-- Todos will be populated by JavaScript -->
+                    </ul>
+                </div>
                 <!-- GitHub Activity Section -->
                 <div class="github-activity-section mt-4">
                     <div class="section-header">
@@ -166,6 +188,20 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Project Details Section -->
+                <div class="project-details mt-4 d-flex flex-row justify-space-between">
+                    <div class="mt-2 text-muted" style="font-size: 0.95rem;">
+                        Visit the GitHub repo for source code and documentation.<br>
+                        Connect on LinkedIn for collaboration or questions.
+                    </div>
+                    <a href="https://github.com/jaganraajan/7-habits-agent-graph" target="_blank" class="me-3" title="GitHub Repository">
+                        <i class="bi bi-github" style="font-size: 2rem;"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/jaganraajan/" target="_blank" title="Author's LinkedIn">
+                        <i class="bi bi-linkedin" style="font-size: 2rem; color: #0a66c2;"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -174,5 +210,35 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+    async function loadTodos() {
+        document.getElementById('todoLoading').style.display = 'block';
+        document.getElementById('todoError').classList.add('d-none');
+        const todoList = document.getElementById('todoList');
+        todoList.innerHTML = '';
+        try {
+            const response = await fetch('/api/todos');
+            const data = await response.json();
+            if (data.todos && data.todos.length > 0) {
+                data.todos.forEach(todo => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    li.innerHTML = `<span>${todo.title}</span><span class="badge bg-${todo.completed ? 'success' : 'secondary'}">${todo.completed ? 'Done' : 'Pending'}</span>`;
+                    todoList.appendChild(li);
+                });
+            } else {
+                todoList.innerHTML = '<li class="list-group-item text-muted">No todos found.</li>';
+            }
+        } catch (e) {
+            document.getElementById('todoError').classList.remove('d-none');
+        } finally {
+            document.getElementById('todoLoading').style.display = 'none';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTodos();
+        document.getElementById('refreshTodoBtn').addEventListener('click', loadTodos);
+    });
+    </script>
 </body>
 </html>

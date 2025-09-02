@@ -25,6 +25,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # Configuration
@@ -62,7 +63,7 @@ def get_image_files() -> List[Dict[str, Any]]:
 
 @app.route('/')
 def index():
-    """Main page with vision board and chat interface."""
+    """Main page with vision board, chat, and todo interface."""
     images = get_image_files()
     return render_template('index.html', images=images)
 
@@ -77,6 +78,30 @@ def serve_image(filename):
     """Serve images from data directory."""
     return send_from_directory(DATA_DIR, filename)
 
+
+# Neon Postgres connection config (set these in your .env)
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
+def get_todos():
+    conn = psycopg2.connect(os.getenv('POSTGRES_CONNECTION_STRING'))
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT id, title, priority FROM tasks ORDER BY id DESC")
+            todos = cur.fetchall()
+        return todos
+    finally:
+        conn.close()
+
+@app.route('/api/todos')
+def api_todos():
+    try:
+        todos = get_todos()
+        return jsonify({"todos": todos})
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
     """Handle chat requests."""

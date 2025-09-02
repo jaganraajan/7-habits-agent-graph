@@ -316,6 +316,7 @@ class VisionBoardApp {
 
     // GitHub Activity methods
     async loadGitHubActivity() {
+        console.log('Loading GitHub activity');
         this.showGitHubLoading(true);
         this.hideGitHubError();
         

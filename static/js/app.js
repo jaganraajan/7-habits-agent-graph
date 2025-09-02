@@ -49,6 +49,10 @@ class VisionBoardApp {
         this.githubError = document.getElementById('githubError');
         this.commitsList = document.getElementById('commitsList');
         this.prsList = document.getElementById('prsList');
+        this.githubSummary = document.getElementById('githubSummary');
+        this.summaryContent = document.getElementById('summaryContent');
+        this.summaryLoading = document.getElementById('summaryLoading');
+        this.currentGithubData = null; // Store current GitHub data for summarization
     }
 
     bindEvents() {
@@ -65,6 +69,12 @@ class VisionBoardApp {
         const refreshGitHubBtn = document.getElementById('refreshGitHubBtn');
         if (refreshGitHubBtn) {
             refreshGitHubBtn.addEventListener('click', () => this.loadGitHubActivity());
+        }
+        
+        // GitHub summarize
+        const summarizeGitHubBtn = document.getElementById('summarizeGitHubBtn');
+        if (summarizeGitHubBtn) {
+            summarizeGitHubBtn.addEventListener('click', () => this.summarizeGitHubActivity());
         }
 
         // Chat controls
@@ -328,6 +338,7 @@ class VisionBoardApp {
 
     displayGitHubActivity(data) {
         this.hideGitHubError(); // Hide error when displaying data
+        this.currentGithubData = data; // Store data for summarization
         
         // Display commits
         this.commitsList.innerHTML = '';
@@ -430,6 +441,43 @@ class VisionBoardApp {
 
     hideGitHubError() {
         this.githubError.classList.add('d-none');
+    }
+
+    async summarizeGitHubActivity() {
+        if (!this.currentGithubData) {
+            alert('Please load GitHub activity first by clicking Refresh.');
+            return;
+        }
+
+        try {
+            // Show loading state
+            this.summaryLoading.style.display = 'block';
+            this.githubSummary.style.display = 'block';
+            this.summaryContent.innerHTML = '';
+
+            const response = await fetch('/api/github-summary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    github_data: this.currentGithubData
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.summaryContent.innerHTML = this.escapeHtml(data.summary);
+            } else {
+                this.summaryContent.innerHTML = 'Error generating summary: ' + (data.error || 'Unknown error');
+            }
+        } catch (error) {
+            console.error('Error summarizing GitHub activity:', error);
+            this.summaryContent.innerHTML = 'Failed to generate summary. Please try again.';
+        } finally {
+            this.summaryLoading.style.display = 'none';
+        }
     }
 }
 

@@ -95,6 +95,10 @@ body, html {
     padding-left: 1.5rem;
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
 }
 
 .chat-container {
@@ -237,6 +241,26 @@ body, html {
 .form-control:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* GitHub Summary Section */
+.github-summary-section {
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
+}
+
+.summary-content {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.github-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Status indicators */

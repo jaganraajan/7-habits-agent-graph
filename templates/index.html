@@ -69,9 +69,14 @@
                 <div class="github-activity-section mt-4">
                     <div class="section-header">
                         <h4><i class="bi bi-github"></i> Recent GitHub Activity</h4>
-                        <button id="refreshGitHubBtn" class="btn btn-outline-info btn-sm">
-                            <i class="bi bi-arrow-clockwise"></i> Refresh
-                        </button>
+                        <div class="github-controls">
+                            <button id="refreshGitHubBtn" class="btn btn-outline-info btn-sm">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                            <button id="summarizeGitHubBtn" class="btn btn-outline-primary btn-sm ms-2">
+                                <i class="bi bi-list-ul"></i> Summarize
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="github-content">
@@ -106,6 +111,22 @@
                                 <div id="prsList" class="activity-list">
                                     <!-- PRs will be populated by JavaScript -->
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- GitHub Summary Section -->
+                        <div id="githubSummary" class="github-summary-section mt-3" style="display: none;">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-file-text"></i> Activity Summary
+                            </h6>
+                            <div id="summaryLoading" class="text-center py-2" style="display: none;">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Generating summary...</span>
+                                </div>
+                                <span class="ms-2">Generating summary...</span>
+                            </div>
+                            <div id="summaryContent" class="summary-content p-3 bg-light rounded">
+                                <!-- Summary will be populated by JavaScript -->
                             </div>
                         </div>
                     </div>

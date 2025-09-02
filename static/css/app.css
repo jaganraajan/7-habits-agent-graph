@@ -727,3 +727,205 @@ body, html {
         font-size: 0.65rem;
     }
 }
+
+/* Habit 1 - Be Proactive Section */
+.habit1-section {
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.habit1-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+.habit1-header:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.habit1-header h3 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.habit1-header .toggle-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.habit1-header.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.habit1-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #f8f9fa;
+}
+
+.habit1-content.expanded {
+    max-height: 800px;
+    overflow-y: auto;
+}
+
+.habit1-content-inner {
+    padding: 1.5rem;
+}
+
+.habit1-markdown {
+    line-height: 1.6;
+    color: #495057;
+}
+
+.habit1-markdown h1 {
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.75rem;
+}
+
+.habit1-markdown h2 {
+    color: #6c757d;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.habit1-markdown h3 {
+    color: #6c757d;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.habit1-markdown ul {
+    margin-bottom: 1rem;
+}
+
+.habit1-markdown li {
+    margin-bottom: 0.25rem;
+}
+
+.habit1-markdown strong {
+    color: #495057;
+}
+
+.habit1-markdown code {
+    background: #e9ecef;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.habit1-markdown blockquote {
+    border-left: 4px solid #667eea;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.habit1-placeholder {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: #6c757d;
+}
+
+.habit1-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.habit1-placeholder h4 {
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+.habit1-placeholder p {
+    margin-bottom: 0.5rem;
+}
+
+.habit1-loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.habit1-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem;
+}
+
+/* Custom scrollbar for habit1 content */
+.habit1-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.habit1-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.habit1-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.habit1-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive design for Habit 1 */
+@media (max-width: 768px) {
+    .habit1-header {
+        padding: 0.75rem;
+    }
+    
+    .habit1-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .habit1-content-inner {
+        padding: 1rem;
+    }
+    
+    .habit1-markdown h1 {
+        font-size: 1.5rem;
+    }
+    
+    .habit1-markdown h2 {
+        font-size: 1.15rem;
+    }
+    
+    .habit1-placeholder {
+        padding: 2rem 1rem;
+    }
+    
+    .habit1-placeholder i {
+        font-size: 2.5rem;
+    }
+}

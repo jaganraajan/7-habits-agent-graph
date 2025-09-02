@@ -24,6 +24,33 @@
         <div class="row h-100">
             <!-- Vision Board Section -->
             <div class="col-md-6 vision-board-section">
+                <!-- Habit 1 - Be Proactive Section -->
+                <div class="habit1-section">
+                    <div class="habit1-header" id="habit1Header">
+                        <h3>
+                            <i class="bi bi-lightning-fill"></i>
+                            Habit 1 - Be Proactive
+                        </h3>
+                        <i class="bi bi-chevron-down toggle-icon" id="habit1ToggleIcon"></i>
+                    </div>
+                    <div class="habit1-content" id="habit1Content">
+                        <div class="habit1-content-inner">
+                            <div id="habit1Loading" class="habit1-loading" style="display: none;">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span class="ms-2">Loading proactive summary...</span>
+                            </div>
+                            <div id="habit1Error" class="habit1-error" style="display: none;">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Failed to load summary. Please try again later.
+                            </div>
+                            <div id="habit1Markdown" class="habit1-markdown">
+                                <!-- Markdown content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="section-header">
                     <h3><i class="bi bi-images"></i> Vision Board</h3>
                     <div class="slideshow-controls">

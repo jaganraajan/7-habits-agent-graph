@@ -87,7 +87,7 @@ def get_todos():
     conn = psycopg2.connect(os.getenv('POSTGRES_CONNECTION_STRING'))
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT id, title, priority FROM tasks ORDER BY id DESC")
+            cur.execute("SELECT id, title, description, due_date, priority, status FROM tasks ORDER BY id DESC")
             todos = cur.fetchall()
         return todos
     finally:

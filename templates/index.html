@@ -65,10 +65,10 @@
                     </div>
                 </div>
                 
-                <!-- Todo Section -->
-                <div class="todo-section mt-4">
+                <!-- Eisenhower Matrix Section -->
+                <div class="eisenhower-section mt-4">
                     <div class="section-header">
-                        <h4><i class="bi bi-list-task"></i> Todo List</h4>
+                        <h4><i class="bi bi-grid-3x3"></i> Eisenhower Matrix</h4>
                         <button id="refreshTodoBtn" class="btn btn-outline-success btn-sm ms-2">
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </button>
@@ -83,9 +83,50 @@
                         <i class="bi bi-exclamation-triangle"></i>
                         Unable to load todos. Please try again later.
                     </div>
-                    <ul id="todoList" class="list-group mt-2">
-                        <!-- Todos will be populated by JavaScript -->
-                    </ul>
+                    <div id="eisenhowerMatrix" class="eisenhower-matrix mt-2">
+                        <!-- Matrix Row 1 -->
+                        <div class="matrix-row">
+                            <div class="matrix-cell urgent-important">
+                                <div class="quadrant-header">
+                                    <h6><i class="bi bi-exclamation-triangle-fill text-danger"></i> Do First</h6>
+                                    <small class="text-muted">Urgent & Important</small>
+                                </div>
+                                <div class="quadrant-tasks" id="quadrant1">
+                                    <!-- Tasks will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <div class="matrix-cell not-urgent-important">
+                                <div class="quadrant-header">
+                                    <h6><i class="bi bi-calendar-check text-info"></i> Schedule</h6>
+                                    <small class="text-muted">Important, Not Urgent</small>
+                                </div>
+                                <div class="quadrant-tasks" id="quadrant2">
+                                    <!-- Tasks will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Matrix Row 2 -->
+                        <div class="matrix-row">
+                            <div class="matrix-cell urgent-not-important">
+                                <div class="quadrant-header">
+                                    <h6><i class="bi bi-person-plus text-warning"></i> Delegate</h6>
+                                    <small class="text-muted">Urgent, Not Important</small>
+                                </div>
+                                <div class="quadrant-tasks" id="quadrant3">
+                                    <!-- Tasks will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <div class="matrix-cell not-urgent-not-important">
+                                <div class="quadrant-header">
+                                    <h6><i class="bi bi-trash text-secondary"></i> Eliminate</h6>
+                                    <small class="text-muted">Not Urgent, Not Important</small>
+                                </div>
+                                <div class="quadrant-tasks" id="quadrant4">
+                                    <!-- Tasks will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -145,30 +186,126 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script>
+    function isTaskUrgent(dueDate) {
+        if (!dueDate) return false;
+        const due = new Date(dueDate);
+        const now = new Date();
+        const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+        return diffDays <= 3; // Tasks due within 3 days are considered urgent
+    }
+
+    function isTaskImportant(priority) {
+        return priority && priority.toLowerCase() === 'high';
+    }
+
+    function formatDueDate(dueDate) {
+        if (!dueDate) return 'No due date';
+        const due = new Date(dueDate);
+        const now = new Date();
+        const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+            return `${Math.abs(diffDays)} days overdue`;
+        } else if (diffDays === 0) {
+            return 'Due today';
+        } else if (diffDays === 1) {
+            return 'Due tomorrow';
+        } else {
+            return `Due in ${diffDays} days`;
+        }
+    }
+
+    function createTaskElement(task) {
+        const taskDiv = document.createElement('div');
+        taskDiv.className = 'task-item';
+        
+        const isUrgent = isTaskUrgent(task.due_date);
+        const dueDateClass = isUrgent ? 'urgent' : '';
+        
+        taskDiv.innerHTML = `
+            <div class="task-title">${task.title || 'Untitled Task'}</div>
+            ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+            <div class="task-meta">
+                <span class="task-due-date ${dueDateClass}">${formatDueDate(task.due_date)}</span>
+                <div>
+                    <span class="task-status ${(task.status || 'open').toLowerCase()}">${task.status || 'Open'}</span>
+                    <span class="task-priority ${(task.priority || 'low').toLowerCase()}">${task.priority || 'Low'}</span>
+                </div>
+            </div>
+        `;
+        
+        return taskDiv;
+    }
+
+    function classifyTaskIntoQuadrant(task) {
+        const isUrgent = isTaskUrgent(task.due_date);
+        const isImportant = isTaskImportant(task.priority);
+        
+        if (isUrgent && isImportant) {
+            return 1; // Do First - Urgent & Important
+        } else if (!isUrgent && isImportant) {
+            return 2; // Schedule - Important, Not Urgent
+        } else if (isUrgent && !isImportant) {
+            return 3; // Delegate - Urgent, Not Important
+        } else {
+            return 4; // Eliminate - Not Urgent, Not Important
+        }
+    }
+
     async function loadTodos() {
         document.getElementById('todoLoading').style.display = 'block';
         document.getElementById('todoError').classList.add('d-none');
-        const todoList = document.getElementById('todoList');
-        todoList.innerHTML = '';
+        
+        // Clear all quadrants
+        for (let i = 1; i <= 4; i++) {
+            const quadrant = document.getElementById(`quadrant${i}`);
+            quadrant.innerHTML = '';
+        }
+        
         try {
             const response = await fetch('/api/todos');
             const data = await response.json();
+            
             if (data.todos && data.todos.length > 0) {
+                // Initialize counters for each quadrant
+                const quadrantCounts = {1: 0, 2: 0, 3: 0, 4: 0};
+                
                 data.todos.forEach(todo => {
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                    li.innerHTML = `<span>${todo.title}</span><span class="badge bg-${todo.completed ? 'success' : 'secondary'}">${todo.completed ? 'Done' : 'Pending'}</span>`;
-                    todoList.appendChild(li);
+                    const quadrantNumber = classifyTaskIntoQuadrant(todo);
+                    const quadrant = document.getElementById(`quadrant${quadrantNumber}`);
+                    const taskElement = createTaskElement(todo);
+                    quadrant.appendChild(taskElement);
+                    quadrantCounts[quadrantNumber]++;
                 });
+                
+                // Add "no tasks" message to empty quadrants
+                for (let i = 1; i <= 4; i++) {
+                    if (quadrantCounts[i] === 0) {
+                        const quadrant = document.getElementById(`quadrant${i}`);
+                        const noTasksDiv = document.createElement('div');
+                        noTasksDiv.className = 'no-tasks';
+                        noTasksDiv.textContent = 'No tasks in this quadrant';
+                        quadrant.appendChild(noTasksDiv);
+                    }
+                }
             } else {
-                todoList.innerHTML = '<li class="list-group-item text-muted">No todos found.</li>';
+                // Show "no tasks" message in all quadrants
+                for (let i = 1; i <= 4; i++) {
+                    const quadrant = document.getElementById(`quadrant${i}`);
+                    const noTasksDiv = document.createElement('div');
+                    noTasksDiv.className = 'no-tasks';
+                    noTasksDiv.textContent = 'No tasks found';
+                    quadrant.appendChild(noTasksDiv);
+                }
             }
         } catch (e) {
+            console.error('Error loading todos:', e);
             document.getElementById('todoError').classList.remove('d-none');
         } finally {
             document.getElementById('todoLoading').style.display = 'none';
         }
     }
+    
     document.addEventListener('DOMContentLoaded', () => {
         loadTodos();
         document.getElementById('refreshTodoBtn').addEventListener('click', loadTodos);

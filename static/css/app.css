@@ -929,3 +929,219 @@ body, html {
         font-size: 2.5rem;
     }
 }
+
+/* Habits 4-7 Section Styles */
+.habits4567-section {
+    margin-top: 2rem;
+}
+
+.habit-section {
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.habit-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+.habit-header:hover {
+    background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.habit-header h4 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.habit-header .toggle-icon {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.habit-header.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.habit-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #f8f9fa;
+}
+
+.habit-content.expanded {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.habit-content-inner {
+    padding: 1rem;
+}
+
+.habit-markdown {
+    line-height: 1.5;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.habit-markdown h1 {
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.habit-markdown h2 {
+    color: #28a745;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.habit-markdown h3 {
+    color: #6c757d;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.habit-markdown ul {
+    margin-bottom: 0.75rem;
+}
+
+.habit-markdown li {
+    margin-bottom: 0.2rem;
+}
+
+.habit-markdown strong {
+    color: #495057;
+}
+
+.habit-markdown code {
+    background: #e9ecef;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.habit-markdown blockquote {
+    border-left: 4px solid #28a745;
+    padding-left: 1rem;
+    margin: 0.75rem 0;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.habit-loading {
+    text-align: center;
+    padding: 1.5rem;
+    color: #6c757d;
+}
+
+.habit-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin: 0.5rem;
+}
+
+/* Specific colors for each habit */
+#habit4Header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+#habit4Header:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+}
+
+#habit5Header {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a2d91 100%);
+}
+
+#habit5Header:hover {
+    background: linear-gradient(135deg, #5a2d91 0%, #4c1a78 100%);
+}
+
+#habit6Header {
+    background: linear-gradient(135deg, #e83e8c 0%, #d91a72 100%);
+}
+
+#habit6Header:hover {
+    background: linear-gradient(135deg, #d91a72 0%, #c70d5f 100%);
+}
+
+#habit7Header {
+    background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%);
+}
+
+#habit7Header:hover {
+    background: linear-gradient(135deg, #e8590c 0%, #d04107 100%);
+}
+
+/* Custom scrollbar for habit content */
+.habit-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.habit-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.habit-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.habit-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive design for new habits */
+@media (max-width: 768px) {
+    .habit-header {
+        padding: 0.6rem 0.75rem;
+    }
+    
+    .habit-header h4 {
+        font-size: 0.9rem;
+    }
+    
+    .habit-content-inner {
+        padding: 0.75rem;
+    }
+    
+    .habit-markdown h1 {
+        font-size: 1.3rem;
+    }
+    
+    .habit-markdown h2 {
+        font-size: 1rem;
+    }
+    
+    .habit-loading {
+        padding: 1rem;
+    }
+}

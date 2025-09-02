@@ -16,7 +16,9 @@ class VisionBoardApp {
         this.initChat();
         this.initGitHub();
         this.initHabit1();
+        this.initHabits4567();
         this.bindEvents();
+        this.bindHabits4567Events();
         this.loadImages();
         this.startNewChat();
         this.loadGitHubActivity();
@@ -589,6 +591,166 @@ class VisionBoardApp {
         html = html.replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
         
         return html;
+    }
+
+    // Habits 4-7 methods
+    initHabits4567() {
+        // Initialize variables for each habit
+        for (let i = 4; i <= 7; i++) {
+            this[`habit${i}Header`] = document.getElementById(`habit${i}Header`);
+            this[`habit${i}Content`] = document.getElementById(`habit${i}Content`);
+            this[`habit${i}ToggleIcon`] = document.getElementById(`habit${i}ToggleIcon`);
+            this[`habit${i}Loading`] = document.getElementById(`habit${i}Loading`);
+            this[`habit${i}Error`] = document.getElementById(`habit${i}Error`);
+            this[`habit${i}Markdown`] = document.getElementById(`habit${i}Markdown`);
+            this[`habit${i}Expanded`] = false;
+            this[`habit${i}Loaded`] = false;
+            
+            // Ensure content starts collapsed
+            this[`habit${i}Content`].classList.remove('expanded');
+            this[`habit${i}Header`].classList.remove('expanded');
+        }
+    }
+
+    bindHabits4567Events() {
+        // Bind click events for each habit header
+        for (let i = 4; i <= 7; i++) {
+            this[`habit${i}Header`].addEventListener('click', () => this.toggleHabit(i));
+        }
+    }
+
+    toggleHabit(habitNumber) {
+        const expanded = this[`habit${habitNumber}Expanded`] = !this[`habit${habitNumber}Expanded`];
+        
+        if (expanded) {
+            this[`habit${habitNumber}Content`].classList.add('expanded');
+            this[`habit${habitNumber}Header`].classList.add('expanded');
+            
+            // Load content on first expand
+            if (!this[`habit${habitNumber}Loaded`]) {
+                this.loadHabits4567Summary();
+                // Mark all as loaded since they share the same summary
+                for (let i = 4; i <= 7; i++) {
+                    this[`habit${i}Loaded`] = true;
+                }
+            }
+        } else {
+            this[`habit${habitNumber}Content`].classList.remove('expanded');
+            this[`habit${habitNumber}Header`].classList.remove('expanded');
+        }
+    }
+
+    async loadHabits4567Summary() {
+        // Show loading for all habits
+        for (let i = 4; i <= 7; i++) {
+            this[`habit${i}Loading`].style.display = 'block';
+            this[`habit${i}Error`].style.display = 'none';
+            this[`habit${i}Markdown`].innerHTML = '';
+        }
+
+        try {
+            const response = await fetch('/api/habit4567-summary');
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.exists) {
+                    this.parseAndDistributeHabits4567Content(data.content);
+                } else {
+                    this.showHabits4567Placeholder();
+                }
+            } else {
+                throw new Error('Failed to load summary');
+            }
+        } catch (error) {
+            console.error('Error loading Habits 4-7 summary:', error);
+            for (let i = 4; i <= 7; i++) {
+                this[`habit${i}Error`].style.display = 'block';
+            }
+        } finally {
+            for (let i = 4; i <= 7; i++) {
+                this[`habit${i}Loading`].style.display = 'none';
+            }
+        }
+    }
+
+    parseAndDistributeHabits4567Content(content) {
+        // Parse the full content and extract sections for each habit
+        const fullHtml = this.parseMarkdown(content);
+        
+        // Extract habit-specific sections
+        const habit4Content = this.extractHabitSection(fullHtml, 'Habit 4');
+        const habit5Content = this.extractHabitSection(fullHtml, 'Habit 5');
+        const habit6Content = this.extractHabitSection(fullHtml, 'Habit 6');  
+        const habit7Content = this.extractHabitSection(fullHtml, 'Habit 7');
+        
+        // Display content for each habit
+        this.habit4Markdown.innerHTML = habit4Content || this.getHabitPlaceholder(4);
+        this.habit5Markdown.innerHTML = habit5Content || this.getHabitPlaceholder(5);
+        this.habit6Markdown.innerHTML = habit6Content || this.getHabitPlaceholder(6);
+        this.habit7Markdown.innerHTML = habit7Content || this.getHabitPlaceholder(7);
+    }
+
+    extractHabitSection(html, habitTitle) {
+        // Extract content between habit headers
+        const regex = new RegExp(`<h2[^>]*>.*?${habitTitle}.*?</h2>(.*?)(?=<h2|$)`, 'is');
+        const match = html.match(regex);
+        return match ? `<h2>${habitTitle}</h2>${match[1]}` : null;
+    }
+
+    showHabits4567Placeholder() {
+        const placeholders = {
+            4: this.getHabitPlaceholder(4),
+            5: this.getHabitPlaceholder(5),
+            6: this.getHabitPlaceholder(6),
+            7: this.getHabitPlaceholder(7)
+        };
+        
+        for (let i = 4; i <= 7; i++) {
+            this[`habit${i}Markdown`].innerHTML = placeholders[i];
+        }
+    }
+
+    getHabitPlaceholder(habitNumber) {
+        const habits = {
+            4: {
+                icon: 'bi-people-fill',
+                title: 'Think Win-Win',
+                description: 'Collaborative development patterns and mutual benefit approaches',
+                focus: ['Collaborative issue resolution', 'Mutual benefit code reviews', 'Consensus building patterns', 'Team synergy examples']
+            },
+            5: {
+                icon: 'bi-ear-fill', 
+                title: 'Seek First to Understand',
+                description: 'Review analysis and discussion understanding practices',
+                focus: ['Thoughtful code review discussions', 'ADR and RFC processes', 'Understanding-first approaches', 'Learning from disagreements']
+            },
+            6: {
+                icon: 'bi-diagram-3-fill',
+                title: 'Synergize',
+                description: 'Multi-tool integration and collaborative examples',
+                focus: ['Tool integration patterns', 'Cross-functional collaboration', 'Synergistic workflows', 'Integration success stories']
+            },
+            7: {
+                icon: 'bi-tools',
+                title: 'Sharpen the Saw',
+                description: 'Learning resources and continuous growth opportunities',
+                focus: ['Learning paths and resources', 'New releases and updates', 'Skill development opportunities', 'Mentorship examples']
+            }
+        };
+        
+        const habit = habits[habitNumber];
+        return `
+            <div class="habit-placeholder">
+                <i class="${habit.icon}"></i>
+                <h4>Ready for ${habit.title}?</h4>
+                <p>The collaborative growth summary hasn't been generated yet.</p>
+                <p>Run the <code>habit4567-summary</code> workflow to discover:</p>
+                <ul style="text-align: left; display: inline-block;">
+                    ${habit.focus.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+                <p><small>Execute via CLI: <code>python main.py</code> and select 'habit4567-summary'</small></p>
+            </div>
+        `;
     }
 }
 

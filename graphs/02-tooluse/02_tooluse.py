@@ -34,12 +34,12 @@ def build_graph() -> StateGraph:
         # Get MCP filesystem tools (registry initialized in main.py)
         # filesystem_tools = get_mcp_tools("filesystem")\
         todo_tools = get_mcp_tools("todo")
-        # github_tools = get_mcp_tools("github")
+        github_tools = get_mcp_tools("github")
         
         # Combine all tools
         all_tools = [
             # *filesystem_tools,
-            # *github_tools,
+            *github_tools,
             *todo_tools
         ] + [generate_vision_image]  # Add your local tool here
         

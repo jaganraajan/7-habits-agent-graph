@@ -15,6 +15,7 @@ class VisionBoardApp {
         this.initSlideshow();
         this.initChat();
         this.initGitHub();
+        this.initHabit1();
         this.bindEvents();
         this.loadImages();
         this.startNewChat();
@@ -55,6 +56,21 @@ class VisionBoardApp {
         this.currentGithubData = null; // Store current GitHub data for summarization
     }
 
+    initHabit1() {
+        this.habit1Header = document.getElementById('habit1Header');
+        this.habit1Content = document.getElementById('habit1Content');
+        this.habit1ToggleIcon = document.getElementById('habit1ToggleIcon');
+        this.habit1Loading = document.getElementById('habit1Loading');
+        this.habit1Error = document.getElementById('habit1Error');
+        this.habit1Markdown = document.getElementById('habit1Markdown');
+        this.habit1Expanded = false;
+        this.habit1Loaded = false;
+        
+        // Ensure content starts collapsed
+        this.habit1Content.classList.remove('expanded');
+        this.habit1Header.classList.remove('expanded');
+    }
+
     bindEvents() {
         // Slideshow controls
         document.getElementById('prevBtn').addEventListener('click', () => this.previousSlide());
@@ -76,6 +92,9 @@ class VisionBoardApp {
         if (summarizeGitHubBtn) {
             summarizeGitHubBtn.addEventListener('click', () => this.summarizeGitHubActivity());
         }
+
+        // Habit 1 toggle
+        this.habit1Header.addEventListener('click', () => this.toggleHabit1());
 
         // Chat controls
         document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
@@ -479,6 +498,97 @@ class VisionBoardApp {
         } finally {
             this.summaryLoading.style.display = 'none';
         }
+    }
+
+    // Habit 1 - Be Proactive methods
+    toggleHabit1() {
+        this.habit1Expanded = !this.habit1Expanded;
+        
+        if (this.habit1Expanded) {
+            this.habit1Content.classList.add('expanded');
+            this.habit1Header.classList.add('expanded');
+            
+            // Load content on first expand
+            if (!this.habit1Loaded) {
+                this.loadHabit1Summary();
+                this.habit1Loaded = true;
+            }
+        } else {
+            this.habit1Content.classList.remove('expanded');
+            this.habit1Header.classList.remove('expanded');
+        }
+    }
+
+    async loadHabit1Summary() {
+        this.habit1Loading.style.display = 'block';
+        this.habit1Error.style.display = 'none';
+        this.habit1Markdown.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/habit1-summary');
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.exists) {
+                    this.habit1Markdown.innerHTML = this.parseMarkdown(data.content);
+                } else {
+                    this.showHabit1Placeholder();
+                }
+            } else {
+                throw new Error('Failed to load summary');
+            }
+        } catch (error) {
+            console.error('Error loading Habit 1 summary:', error);
+            this.habit1Error.style.display = 'block';
+        } finally {
+            this.habit1Loading.style.display = 'none';
+        }
+    }
+
+    showHabit1Placeholder() {
+        this.habit1Markdown.innerHTML = `
+            <div class="habit1-placeholder">
+                <i class="bi bi-lightning-fill"></i>
+                <h4>Ready to Be Proactive?</h4>
+                <p>The weekly GitHub research summary hasn't been generated yet.</p>
+                <p>Run the <code>habit1-proactive</code> workflow to discover:</p>
+                <ul style="text-align: left; display: inline-block;">
+                    <li>Top agentic/MCP repositories for contribution</li>
+                    <li>Beginner-friendly issues and opportunities</li>
+                    <li>Learning resources and documentation</li>
+                    <li>Recent patterns and examples</li>
+                </ul>
+                <p><small>Execute via CLI: <code>python main.py</code> and select 'habit1-proactive'</small></p>
+            </div>
+        `;
+    }
+
+    parseMarkdown(content) {
+        // Simple markdown parsing for basic formatting
+        let html = content
+            // Headers
+            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+            // Bold
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // Italic
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            // Code inline
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            // Links
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+            // Line breaks
+            .replace(/\n/g, '<br>');
+
+        // Convert lists
+        html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+        html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+        
+        // Convert numbered lists
+        html = html.replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
+        
+        return html;
     }
 }
 

@@ -101,6 +101,29 @@ def api_todos():
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/habit1-summary')
+def api_habit1_summary():
+    """Get the Habit 1 proactive summary markdown content."""
+    try:
+        summary_path = DATA_DIR / "habits" / "habit1_proactive_summary.md"
+        
+        if summary_path.exists():
+            with open(summary_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return jsonify({
+                "exists": True,
+                "content": content,
+                "last_modified": datetime.fromtimestamp(summary_path.stat().st_mtime).isoformat()
+            })
+        else:
+            return jsonify({
+                "exists": False,
+                "message": "Summary not yet generated. Run the habit1-proactive workflow to create it."
+            })
+    except Exception as e:
+        print(f"Error loading habit1 summary: {e}")
+        return jsonify({"error": str(e)}), 500
     
 @app.route('/api/chat', methods=['POST'])
 def api_chat():

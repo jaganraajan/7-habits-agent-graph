@@ -46,12 +46,14 @@ class VisionBoardApp {
         document.getElementById('prevBtn').addEventListener('click', () => this.previousSlide());
         document.getElementById('nextBtn').addEventListener('click', () => this.nextSlide());
         document.getElementById('autoplayBtn').addEventListener('click', () => this.toggleAutoplay());
-        document.getElementById('refreshBtn').addEventListener('click', () => this.refreshImages());
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.refreshImages());
+        }
 
         // Chat controls
         document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
         document.getElementById('newChatBtn').addEventListener('click', () => this.startNewChat());
-        
         // Enter key for sending messages
         this.messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -59,7 +61,6 @@ class VisionBoardApp {
                 this.sendMessage();
             }
         });
-
         // Auto-refresh images every 30 seconds
         setInterval(() => this.refreshImages(), 30000);
     }
@@ -109,18 +110,50 @@ class VisionBoardApp {
     }
 
     async refreshImages() {
+        console.log('in refresh images')
+        console.log(this.images)
         try {
             const response = await fetch('/api/images');
             const data = await response.json();
+            // If the number of images changed, re-render the slideshow
             
-            if (data.images.length !== this.images.length) {
-                // Images have changed, reload the page to update slideshow
-                window.location.reload();
+                // Only update the src of each image element
+            this.images = data.images;
+            const slideshowContainer = document.getElementById('imageSlideshow');
+            if (slideshowContainer) {
+                const imgElements = slideshowContainer.querySelectorAll('img');
+                this.images.forEach((img, idx) => {
+                    if (imgElements[idx]) {
+                        imgElements[idx].src = img.path;
+                    }
+                });
             }
         } catch (error) {
             console.error('Error refreshing images:', error);
         }
     }
+
+    // renderSlideshow() {
+    //     // Remove all slides
+    //     const slideshowContainer = document.getElementById('imageSlideshow');
+    //     if (!slideshowContainer) return;
+    //     slideshowContainer.innerHTML = '';
+    //     // Add new slides
+    //     this.images.forEach((img, idx) => {
+    //         console.log('rendering image', img)
+    //         const slideDiv = document.createElement('div');
+    //         slideDiv.className = 'slide' + (idx === 0 ? ' active' : '');
+    //         const imgElem = document.createElement('img');
+    //         imgElem.src = img.path;
+    //         imgElem.alt = `Vision Image ${idx + 1}`;
+    //         slideDiv.appendChild(imgElem);
+    //         slideshowContainer.appendChild(slideDiv);
+    //     });
+    //     // Update slides reference and counter
+    //     this.slides = document.querySelectorAll('.slide');
+    //     this.currentSlide = 0;
+    //     this.updateSlideCounter();
+    // }
 
     async loadImages() {
         try {

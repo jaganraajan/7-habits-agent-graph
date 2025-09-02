@@ -14,9 +14,9 @@
             <span class="navbar-brand mb-0 h1">
                 <i class="bi bi-diagram-3"></i> 7 Habits Agent Graph
             </span>
-            <div class="navbar-text">
-                Vision Board & AI Chat Interface
-            </div>
+            <span class="navbar-brand mb-0 h1">
+                Vision Board & AI Chat Interface <i class="bi bi-diagram-3"></i>
+            </span>
         </div>
     </nav>
 
@@ -51,9 +51,7 @@
                                 <img src="{{ url_for('serve_image', filename=image.filename) }}" 
                                      alt="Vision Board Image" class="slide-image">
                                 <div class="slide-caption">
-                                    <small>{{ image.filename }}</small>
-                                    <br>
-                                    <small class="text-muted">Created: {{ image.created[:19] }}</small>
+                                    <small>Created: {{ image.created[:19] }}</small>
                                 </div>
                             </div>
                             {% endfor %}
@@ -81,14 +79,7 @@
                 
                 <div class="chat-container">
                     <div id="chatMessages" class="chat-messages">
-                        <div class="message assistant-message">
-                            <div class="message-content">
-                                <strong>AI Assistant:</strong> Hello! I'm your 7 Habits AI assistant. I can help you with various tasks including creating vision board images. Try asking me to "generate a vision board image" or any other question!
-                            </div>
-                            <div class="message-time">
-                                <small class="text-muted">Just now</small>
-                            </div>
-                        </div>
+                        <!-- Start with an empty chat; let JS/backend add the welcome message -->
                     </div>
                     
                     <div class="chat-input">

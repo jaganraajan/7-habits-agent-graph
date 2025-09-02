@@ -6,8 +6,7 @@ body, html {
 }
 
 .container-fluid {
-    padding-top: 1rem;
-    height: calc(100vh - 60px);
+    padding: 1rem;
 }
 
 /* Section headers */

@@ -14,9 +14,11 @@ class VisionBoardApp {
     init() {
         this.initSlideshow();
         this.initChat();
+        this.initGitHub();
         this.bindEvents();
         this.loadImages();
         this.startNewChat();
+        this.loadGitHubActivity();
     }
 
     initSlideshow() {
@@ -41,6 +43,14 @@ class VisionBoardApp {
         this.sendBtn.disabled = false;
     }
 
+    initGitHub() {
+        this.githubContent = document.getElementById('githubContent');
+        this.githubLoading = document.getElementById('githubLoading');
+        this.githubError = document.getElementById('githubError');
+        this.commitsList = document.getElementById('commitsList');
+        this.prsList = document.getElementById('prsList');
+    }
+
     bindEvents() {
         // Slideshow controls
         document.getElementById('prevBtn').addEventListener('click', () => this.previousSlide());
@@ -49,6 +59,12 @@ class VisionBoardApp {
         const refreshBtn = document.getElementById('refreshBtn');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => this.refreshImages());
+        }
+        
+        // GitHub refresh
+        const refreshGitHubBtn = document.getElementById('refreshGitHubBtn');
+        if (refreshGitHubBtn) {
+            refreshGitHubBtn.addEventListener('click', () => this.loadGitHubActivity());
         }
 
         // Chat controls
@@ -286,6 +302,134 @@ class VisionBoardApp {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // GitHub Activity methods
+    async loadGitHubActivity() {
+        this.showGitHubLoading(true);
+        this.hideGitHubError();
+        
+        try {
+            const response = await fetch('/api/github-activity');
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.displayGitHubActivity(data);
+            } else {
+                throw new Error(data.error || 'Failed to load GitHub activity');
+            }
+        } catch (error) {
+            console.error('Error loading GitHub activity:', error);
+            this.showGitHubError();
+        } finally {
+            this.showGitHubLoading(false);
+        }
+    }
+
+    displayGitHubActivity(data) {
+        this.hideGitHubError(); // Hide error when displaying data
+        
+        // Display commits
+        this.commitsList.innerHTML = '';
+        if (data.commits && data.commits.length > 0) {
+            data.commits.forEach(commit => {
+                const commitElement = this.createCommitElement(commit);
+                this.commitsList.appendChild(commitElement);
+            });
+        } else {
+            this.commitsList.innerHTML = '<div class="text-muted text-center p-3">No recent commits</div>';
+        }
+
+        // Display pull requests
+        this.prsList.innerHTML = '';
+        if (data.pull_requests && data.pull_requests.length > 0) {
+            data.pull_requests.forEach(pr => {
+                const prElement = this.createPRElement(pr);
+                this.prsList.appendChild(prElement);
+            });
+        } else {
+            this.prsList.innerHTML = '<div class="text-muted text-center p-3">No pull requests</div>';
+        }
+    }
+
+    createCommitElement(commit) {
+        const div = document.createElement('div');
+        div.className = 'activity-item';
+        
+        const shortSha = commit.sha.substring(0, 7);
+        const date = new Date(commit.date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        div.innerHTML = `
+            <div class="item-title">${this.escapeHtml(commit.message)}</div>
+            <div class="item-meta">
+                <span class="item-author">${this.escapeHtml(commit.author.name)}</span>
+                <span class="item-sha">${shortSha}</span>
+                <span class="item-date">${date}</span>
+            </div>
+        `;
+        
+        div.addEventListener('click', () => {
+            if (commit.url) {
+                window.open(commit.url, '_blank');
+            }
+        });
+        
+        return div;
+    }
+
+    createPRElement(pr) {
+        const div = document.createElement('div');
+        div.className = 'activity-item';
+        
+        const date = new Date(pr.created_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        div.innerHTML = `
+            <div class="item-title">
+                <span class="pr-number">#${pr.number}</span> ${this.escapeHtml(pr.title)}
+            </div>
+            <div class="item-meta">
+                <span class="item-author">${this.escapeHtml(pr.user.login)}</span>
+                <span class="pr-state ${pr.state}">${pr.state}</span>
+                <span class="item-date">${date}</span>
+            </div>
+        `;
+        
+        div.addEventListener('click', () => {
+            if (pr.url) {
+                window.open(pr.url, '_blank');
+            }
+        });
+        
+        return div;
+    }
+
+    showGitHubLoading(show) {
+        if (show) {
+            this.githubLoading.style.display = 'block';
+            this.githubContent.style.display = 'none';
+        } else {
+            this.githubLoading.style.display = 'none';
+            this.githubContent.style.display = 'block';
+        }
+    }
+
+    showGitHubError() {
+        this.githubError.classList.remove('d-none');
+        this.githubContent.style.display = 'none';
+    }
+
+    hideGitHubError() {
+        this.githubError.classList.add('d-none');
     }
 }
 

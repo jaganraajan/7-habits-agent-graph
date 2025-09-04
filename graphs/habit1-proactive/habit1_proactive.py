@@ -1,5 +1,4 @@
 import os
-import json
 from datetime import datetime
 from dotenv import load_dotenv
 from typing import Annotated, TypedDict
@@ -14,29 +13,33 @@ from framework.mcp_registry import get_mcp_tools
 from framework.prompt_manager import get_prompt
 from framework.log_service import log
 
-# this is the key for the prompt in the prompt manager which gets the Langfuse prompt
 PROMPT_KEY = "habit1_proactive"
 
-# the state that will be passed to each node
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
-    github_results: dict
     summary: str
 
 def init_state() -> State:
-    system_prompt = get_prompt(PROMPT_KEY) or """You are a proactive GitHub research assistant for the 7 Habits Agent Graph. 
-Your mission is to research agentic/MCP repositories, find learning opportunities, and identify beginner-friendly contribution areas.
+    system_prompt = """
+        You are a proactive GitHub research assistant for the 7 Habits Agent Graph.
 
-Focus on:
-1. Finding top agentic/MCP repositories for potential contributions
-2. Identifying beginner-friendly issues (good first issue, help wanted)
-3. Looking for ROADMAP, ADR, and CONTRIBUTING documentation for guidance
-4. Finding example agentic patterns and recent changelogs
-5. Summarizing findings in a clear, actionable format"""
-    
+        Your mission:
+        - Research agentic/MCP repositories using the available GitHub tools.
+        - Find top agentic/MCP repositories for potential contributions.
+        - Identify beginner-friendly issues (good first issue, help wanted).
+        - Look for ROADMAP, ADR, and CONTRIBUTING documentation.
+        - Find example agentic patterns and recent changelogs.
+        - Summarize findings in a clear, actionable format.
+
+        **Instructions:**
+        - You MUST use the available GitHub tools (search_repositories, search_code, search_issues, get_file_contents) to gather information.
+        - Do NOT answer with a summary until you have called the tools and received results.
+        - After each tool call, review the results and decide if more information is needed.
+        - When you have gathered enough data, reply: "Ready to synthesize."
+        - You may loop up to 3 times to gather information before synthesizing.
+        """
     return {
         "messages": [SystemMessage(content=system_prompt)],
-        "github_results": {},
         "summary": ""
     }
 
@@ -46,8 +49,11 @@ def build_graph() -> StateGraph:
     try:
         github_tools = get_mcp_tools("github")
 
+        MAX_ITER = 3  # Maximum number of research-tool loops
+
         def research_node(state: State, config: RunnableConfig) -> State:
-            """Research GitHub repositories for agentic/MCP content"""
+            # Track loop count in state
+            state["loop_count"] = state.get("loop_count", 0) + 1
             subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
             api_version = "2024-12-01-preview"
             llm = AzureChatOpenAI(
@@ -57,28 +63,30 @@ def build_graph() -> StateGraph:
                 deployment_name="gpt-4o-mini"
             )
             research_prompt = """
-Search for and analyze repositories related to:
-1. Agent frameworks (LangGraph, CrewAI, AutoGen, etc.)
-2. MCP (Model Context Protocol) implementations
-3. Agentic AI patterns and examples
-4. AI assistant/agent repositories
+Research agentic/MCP repositories and gather:
+- Top repositories (using search_repositories)
+- Beginner-friendly issues (using search_issues)
+- Documentation files (using get_file_contents)
+- Recent changelogs and patterns
 
-For each relevant repository found:
-- Look for beginner-friendly issues (good first issue, help wanted labels)
-- Find documentation (ROADMAP.md, ADR/, CONTRIBUTING.md)
-- Check recent changelogs and patterns
-- Note contribution opportunities
-
-Use the search_repositories and search_code tools to find relevant repositories.
-Use search_issues to find beginner-friendly issues.
-Use get_file_contents to examine documentation files.
+Use the available tools to collect this information. When you have enough, let me know you're ready to synthesize.
 """
             research_message = SystemMessage(content=research_prompt)
             ai: AIMessage = llm.invoke(state["messages"] + [research_message], config=config)
-            return {"messages": [ai]}
+            return {"messages": [ai], "loop_count": state["loop_count"]}
+
+        def should_continue_tooluse(state: State, config: RunnableConfig) -> str:
+            # If loop count exceeded, go to synthesize
+            if state.get("loop_count", 0) >= MAX_ITER:
+                return "synthesize"
+            # If the last message says ready to synthesize, move on
+            last_msg = state["messages"][-1]
+            if hasattr(last_msg, "content") and "ready to synthesize" in last_msg.content.lower():
+                return "synthesize"
+            return "research"
 
         def synthesize_node(state: State, config: RunnableConfig) -> State:
-            """Synthesize research results into a summary"""
+            """LLM synthesizes research results into a summary."""
             subscription_key = os.getenv("AZURE_OPENAI_API_KEY")
             api_version = "2024-12-01-preview"
             llm = AzureChatOpenAI(
@@ -134,10 +142,8 @@ Make this practical and actionable. Focus on concrete opportunities for skill de
                 f.write(summary)
             return state
 
-        # ToolNode handles tool calls
         tool_node = ToolNode(tools=github_tools)
 
-        # Build the graph
         graph = StateGraph(State)
         graph.add_node("research", research_node)
         graph.add_node("tools", tool_node)
@@ -145,7 +151,14 @@ Make this practical and actionable. Focus on concrete opportunities for skill de
         graph.add_node("save", save_summary_node)
         graph.add_edge(START, "research")
         graph.add_edge("research", "tools")
-        graph.add_edge("tools", "synthesize")
+        graph.add_conditional_edges(
+            "tools",
+            should_continue_tooluse,
+            {
+                "research": "research",
+                "synthesize": "synthesize"
+            }
+        )
         graph.add_edge("synthesize", "save")
         graph.add_edge("save", END)
         return graph

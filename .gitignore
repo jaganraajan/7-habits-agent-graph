@@ -16,3 +16,6 @@ data/
 logs/
 
 mcp_config.json
+
+# Test files
+test_*.py

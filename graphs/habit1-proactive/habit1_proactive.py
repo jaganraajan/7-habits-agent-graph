@@ -18,6 +18,7 @@ PROMPT_KEY = "habit1_proactive"
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     summary: str
+    loop_count: int 
 
 def init_state() -> State:
     system_prompt = """
@@ -47,9 +48,11 @@ def init_state() -> State:
 def build_graph() -> StateGraph:
     load_dotenv()
     try:
-        github_tools = get_mcp_tools("github")
+        all_github_tools = get_mcp_tools("github")
+        # Only keep the three required tools
+        github_tools = [tool for tool in all_github_tools if tool.name in ["search_repositories", "search_issues", "get_file_contents"]]
 
-        MAX_ITER = 3  # Maximum number of research-tool loops
+        MAX_ITER = 5  # Maximum number of research-tool loops
 
         def research_node(state: State, config: RunnableConfig) -> State:
             # Track loop count in state
@@ -73,8 +76,10 @@ Use the available tools to collect this information. When you have enough, let m
 """
             research_message = SystemMessage(content=research_prompt)
             ai: AIMessage = llm.invoke(state["messages"] + [research_message], config=config)
-            return {"messages": [ai], "loop_count": state["loop_count"]}
-
+            # Append the new AI message to the message history
+            state["messages"].append(ai)
+            return state
+        
         def should_continue_tooluse(state: State, config: RunnableConfig) -> str:
             # If loop count exceeded, go to synthesize
             if state.get("loop_count", 0) >= MAX_ITER:

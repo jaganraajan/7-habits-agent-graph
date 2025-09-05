@@ -6,6 +6,7 @@ class VisionBoardApp {
         this.images = [];
         this.autoplayInterval = null;
         this.autoplayActive = false;
+        this.alwaysSlideshow = true; // Enable always slideshow by default
         this.currentSessionId = null;
         
         this.init();
@@ -32,6 +33,9 @@ class VisionBoardApp {
             document.getElementById('prevBtn').disabled = true;
             document.getElementById('nextBtn').disabled = true;
             document.getElementById('autoplayBtn').disabled = true;
+        } else if (this.alwaysSlideshow && this.slides.length > 1) {
+            // Auto-start slideshow when always slideshow is enabled and there are multiple images
+            this.startAutoplay();
         }
     }
 
@@ -130,20 +134,62 @@ class VisionBoardApp {
         this.showSlide(this.currentSlide - 1);
     }
 
-    toggleAutoplay() {
-        const btn = document.getElementById('autoplayBtn');
-        const icon = btn.querySelector('i');
-        
+    startAutoplay() {
+        if (!this.autoplayActive && this.slides.length > 1) {
+            this.autoplayInterval = setInterval(() => this.nextSlide(), 3000);
+            this.autoplayActive = true;
+            this.updateAutoplayButton();
+        }
+    }
+
+    stopAutoplay() {
         if (this.autoplayActive) {
             clearInterval(this.autoplayInterval);
             this.autoplayActive = false;
-            icon.className = 'bi bi-play';
-            btn.innerHTML = '<i class="bi bi-play"></i> Auto';
+            this.updateAutoplayButton();
+        }
+    }
+
+    updateAutoplayButton() {
+        const btn = document.getElementById('autoplayBtn');
+        const icon = btn.querySelector('i');
+        
+        if (this.alwaysSlideshow) {
+            if (this.autoplayActive) {
+                icon.className = 'bi bi-pause';
+                btn.innerHTML = '<i class="bi bi-pause"></i> Always On';
+                btn.title = 'Pause slideshow (Always On mode)';
+            } else {
+                icon.className = 'bi bi-play';
+                btn.innerHTML = '<i class="bi bi-play"></i> Always On';
+                btn.title = 'Resume slideshow (Always On mode)';
+            }
         } else {
-            this.autoplayInterval = setInterval(() => this.nextSlide(), 3000);
-            this.autoplayActive = true;
-            icon.className = 'bi bi-pause';
-            btn.innerHTML = '<i class="bi bi-pause"></i> Auto';
+            if (this.autoplayActive) {
+                icon.className = 'bi bi-pause';
+                btn.innerHTML = '<i class="bi bi-pause"></i> Auto';
+                btn.title = 'Pause slideshow';
+            } else {
+                icon.className = 'bi bi-play';
+                btn.innerHTML = '<i class="bi bi-play"></i> Auto';
+                btn.title = 'Start slideshow';
+            }
+        }
+    }
+
+    toggleAutoplay() {
+        if (this.autoplayActive) {
+            this.stopAutoplay();
+            // In always slideshow mode, auto-restart after a short pause if user doesn't interact
+            if (this.alwaysSlideshow) {
+                setTimeout(() => {
+                    if (!this.autoplayActive && this.slides.length > 1) {
+                        this.startAutoplay();
+                    }
+                }, 10000); // Restart after 10 seconds of inactivity
+            }
+        } else {
+            this.startAutoplay();
         }
     }
 
@@ -174,6 +220,15 @@ class VisionBoardApp {
                         imgElements[idx].src = img.path;
                     }
                 });
+                
+                // Re-initialize slideshow to update slide count and restart autoplay if needed
+                this.slides = document.querySelectorAll('.slide');
+                this.updateSlideCounter();
+                
+                // Restart autoplay if always slideshow is enabled and we have images
+                if (this.alwaysSlideshow && this.slides.length > 1 && !this.autoplayActive) {
+                    this.startAutoplay();
+                }
             }
         } catch (error) {
             console.error('Error refreshing images:', error);
@@ -756,7 +811,7 @@ class VisionBoardApp {
 
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new VisionBoardApp();
+    window.visionBoardApp = new VisionBoardApp();
 });
 
 // Handle window resize for responsive layout
@@ -767,11 +822,20 @@ window.addEventListener('resize', () => {
 // Handle visibility change to pause/resume autoplay
 document.addEventListener('visibilitychange', () => {
     const app = window.visionBoardApp;
-    if (app && app.autoplayActive) {
+    if (app && app.alwaysSlideshow && app.slides.length > 1) {
         if (document.hidden) {
-            clearInterval(app.autoplayInterval);
+            // Pause when tab is hidden
+            if (app.autoplayActive) {
+                clearInterval(app.autoplayInterval);
+                app.autoplayInterval = null;
+            }
         } else {
-            app.autoplayInterval = setInterval(() => app.nextSlide(), 3000);
+            // Resume when tab becomes visible
+            if (app.alwaysSlideshow && !app.autoplayInterval) {
+                app.autoplayInterval = setInterval(() => app.nextSlide(), 3000);
+                app.autoplayActive = true;
+                app.updateAutoplayButton();
+            }
         }
     }
 });

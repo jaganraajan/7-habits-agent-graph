@@ -70,10 +70,6 @@ class _MCPRegistry:
 
     def get_tools(self, server_name: str) -> List:
         return self._tools_by_server.get(server_name, [])
-    
-    def get_all_servers_tools(self) -> Dict[str, List]:
-        """Get all tools organized by server name."""
-        return dict(self._tools_by_server)
 
 
 _registry = _MCPRegistry()
@@ -87,8 +83,3 @@ async def init_mcp_registry(config_path: str = "mcp_config.json") -> None:
 
 def get_mcp_tools(server_name: str) -> List:
     return _registry.get_tools(server_name)
-
-
-def get_all_mcp_servers_tools() -> Dict[str, List]:
-    """Get all MCP tools organized by server name."""
-    return _registry.get_all_servers_tools()

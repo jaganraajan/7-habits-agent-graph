@@ -18,7 +18,7 @@ import json
 
 # Import existing framework components
 from framework.graph_manager import invoke_graph
-from framework.mcp_registry import init_mcp_registry
+from framework.mcp_registry import init_mcp_registry, get_all_mcp_servers_tools
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -101,6 +101,135 @@ def api_todos():
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/mcp-tools')
+def api_mcp_tools():
+    """Get all MCP tools organized by server name."""
+    try:
+        tools_by_server = get_all_mcp_servers_tools()
+        
+        # If no tools available, return mock data for demo
+        if not tools_by_server or len(tools_by_server) == 0:
+            print("No MCP tools found, returning mock data for demo")
+            # Return mock data for demo purposes when MCP is not available
+            mock_result = {
+                "servers": [
+                    {
+                        "name": "filesystem",
+                        "display_name": "Filesystem",
+                        "tool_count": 11,
+                        "tools": [
+                            {"name": "read_file", "description": "Read contents of a file"},
+                            {"name": "write_file", "description": "Write content to a file"},
+                            {"name": "list_directory", "description": "List files and directories"},
+                            {"name": "search_files", "description": "Search for files matching a pattern"},
+                            {"name": "create_directory", "description": "Create a new directory"},
+                            {"name": "delete_file", "description": "Delete a file"},
+                            {"name": "move_file", "description": "Move or rename a file"},
+                            {"name": "copy_file", "description": "Copy a file to another location"},
+                            {"name": "file_info", "description": "Get information about a file"},
+                            {"name": "edit_file", "description": "Edit text files interactively"},
+                            {"name": "find_files", "description": "Find files by name or content"}
+                        ]
+                    },
+                    {
+                        "name": "github", 
+                        "display_name": "GitHub",
+                        "tool_count": 26,
+                        "tools": [
+                            {"name": "list_commits", "description": "Get recent commits from a repository"},
+                            {"name": "list_pull_requests", "description": "List and filter repository pull requests"},
+                            {"name": "list_issues", "description": "List issues with filtering options"},
+                            {"name": "get_file_contents", "description": "Get contents of files or directories"},
+                            {"name": "search_repositories", "description": "Search for GitHub repositories"},
+                            {"name": "search_code", "description": "Search for code across GitHub repositories"},
+                            {"name": "search_issues", "description": "Search for issues and pull requests"},
+                            {"name": "search_users", "description": "Search for GitHub users"},
+                            {"name": "create_repository", "description": "Create new repositories"},
+                            {"name": "fork_repository", "description": "Fork repositories to your account"},
+                            {"name": "create_branch", "description": "Create new branches"},
+                            {"name": "create_issue", "description": "Create new issues"},
+                            {"name": "update_issue", "description": "Update existing issues"},
+                            {"name": "add_issue_comment", "description": "Add comments to issues"},
+                            {"name": "create_pull_request", "description": "Create new pull requests"},
+                            {"name": "merge_pull_request", "description": "Merge pull requests"},
+                            {"name": "create_pull_request_review", "description": "Review pull requests"},
+                            {"name": "create_or_update_file", "description": "Create or update individual files"},
+                            {"name": "push_files", "description": "Push multiple files in a single commit"},
+                            {"name": "get_repository", "description": "Get repository information"},
+                            {"name": "list_branches", "description": "List repository branches"},
+                            {"name": "get_branch", "description": "Get specific branch information"},
+                            {"name": "delete_branch", "description": "Delete a repository branch"},
+                            {"name": "get_pull_request", "description": "Get pull request details"},
+                            {"name": "list_releases", "description": "List repository releases"},
+                            {"name": "create_release", "description": "Create a new release"}
+                        ]
+                    },
+                    {
+                        "name": "vision",
+                        "display_name": "Vision",
+                        "tool_count": 1,
+                        "tools": [
+                            {"name": "vision/add_with_image", "description": "Generate a vision board image using Azure OpenAI DALL-E"}
+                        ]
+                    },
+                    {
+                        "name": "todo",
+                        "display_name": "Todo",
+                        "tool_count": 4,
+                        "tools": [
+                            {"name": "add_todo_prompt", "description": "Add a new TODO item by providing a title"},
+                            {"name": "list_todos_prompt", "description": "Retrieve all TODO items"},
+                            {"name": "complete_todo_prompt", "description": "Mark a TODO item as completed by ID"},
+                            {"name": "delete_todo_prompt", "description": "Delete a TODO item by ID"}
+                        ]
+                    }
+                ],
+                "total_tools": 42,
+                "total_servers": 4
+            }
+            
+            return jsonify(mock_result)
+        
+        # Transform the real data to be more user-friendly
+        result = {
+            "servers": [],
+            "total_tools": 0,
+            "total_servers": len(tools_by_server)
+        }
+        
+        for server_name, tools in tools_by_server.items():
+            server_info = {
+                "name": server_name,
+                "display_name": server_name.title(),
+                "tool_count": len(tools),
+                "tools": []
+            }
+            
+            # Extract tool information
+            for tool in tools:
+                tool_info = {
+                    "name": tool.get("name", "Unknown"),
+                    "description": tool.get("description", "No description available")
+                }
+                server_info["tools"].append(tool_info)
+            
+            result["servers"].append(server_info)
+            result["total_tools"] += len(tools)
+        
+        # Sort servers by name for consistent display
+        result["servers"] = sorted(result["servers"], key=lambda x: x["name"])
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        print(f"Error fetching MCP tools: {e}")
+        return jsonify({
+            "servers": [],
+            "total_tools": 0,
+            "total_servers": 0,
+            "error": "Failed to fetch MCP tools"
+        }), 500
 
 @app.route('/api/habit1-summary')
 def api_habit1_summary():

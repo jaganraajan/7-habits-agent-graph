@@ -116,8 +116,9 @@ def api_mcp_tools():
                 "servers": [
                     {
                         "name": "filesystem",
-                        "display_name": "Filesystem",
+                        "display_name": "Filesystem (Demo)",
                         "tool_count": 11,
+                        "status": "demo",
                         "tools": [
                             {"name": "read_file", "description": "Read contents of a file"},
                             {"name": "write_file", "description": "Write content to a file"},
@@ -134,8 +135,9 @@ def api_mcp_tools():
                     },
                     {
                         "name": "github", 
-                        "display_name": "GitHub",
+                        "display_name": "GitHub (Demo)",
                         "tool_count": 26,
+                        "status": "demo",
                         "tools": [
                             {"name": "list_commits", "description": "Get recent commits from a repository"},
                             {"name": "list_pull_requests", "description": "List and filter repository pull requests"},
@@ -167,16 +169,18 @@ def api_mcp_tools():
                     },
                     {
                         "name": "vision",
-                        "display_name": "Vision",
+                        "display_name": "Vision (Demo)",
                         "tool_count": 1,
+                        "status": "demo",
                         "tools": [
                             {"name": "vision/add_with_image", "description": "Generate a vision board image using Azure OpenAI DALL-E"}
                         ]
                     },
                     {
                         "name": "todo",
-                        "display_name": "Todo",
+                        "display_name": "Todo (Demo)",
                         "tool_count": 4,
+                        "status": "demo",
                         "tools": [
                             {"name": "add_todo_prompt", "description": "Add a new TODO item by providing a title"},
                             {"name": "list_todos_prompt", "description": "Retrieve all TODO items"},
@@ -186,7 +190,8 @@ def api_mcp_tools():
                     }
                 ],
                 "total_tools": 42,
-                "total_servers": 4
+                "total_servers": 4,
+                "source": "demo"
             }
             
             return jsonify(mock_result)
@@ -195,7 +200,8 @@ def api_mcp_tools():
         result = {
             "servers": [],
             "total_tools": 0,
-            "total_servers": len(tools_by_server)
+            "total_servers": len(tools_by_server),
+            "source": "connected"
         }
         
         for server_name, tools in tools_by_server.items():
@@ -203,6 +209,7 @@ def api_mcp_tools():
                 "name": server_name,
                 "display_name": server_name.title(),
                 "tool_count": len(tools),
+                "status": "connected",
                 "tools": []
             }
             

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "vision": {
+      "command": "python",
+      "args": [
+        "mcp_servers/vision/server.py"
+      ],
+      "env": {}
+    }
+  }
+}

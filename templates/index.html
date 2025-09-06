@@ -498,23 +498,35 @@
                     return;
                 }
                 
-                // Add summary header
+                // Add summary header with status indicator
+                const isDemo = data.source === 'demo';
+                const summaryIcon = isDemo ? 'bi-broadcast text-warning' : 'bi-server text-success';
+                const statusText = isDemo ? ' (Demo Mode)' : ' (Connected)';
+                const statusClass = isDemo ? 'text-warning' : 'text-success';
+                
                 mcpToolsMenu.innerHTML += `
                     <li><h6 class="dropdown-header">
-                        <i class="bi bi-server me-1"></i>
+                        <i class="${summaryIcon} me-1"></i>
                         ${data.total_servers} Server${data.total_servers !== 1 ? 's' : ''} • ${data.total_tools} Tool${data.total_tools !== 1 ? 's' : ''}
+                        <small class="${statusClass}">${statusText}</small>
                     </h6></li>
                     <li><hr class="dropdown-divider"></li>
                 `;
                 
                 // Add each server and its tools
                 data.servers.forEach((server, index) => {
+                    // Determine server status styling
+                    const isConnected = server.status === 'connected';
+                    const statusIcon = isConnected ? 'bi-plug-fill text-success' : 'bi-broadcast text-warning';
+                    const statusClass = isConnected ? 'text-success' : 'text-warning';
+                    const badgeClass = isConnected ? 'bg-success' : 'bg-warning text-dark';
+                    
                     // Server header
                     mcpToolsMenu.innerHTML += `
-                        <li><div class="dropdown-item-text fw-bold text-primary">
-                            <i class="bi bi-hdd-stack me-2"></i>
+                        <li><div class="dropdown-item-text fw-bold ${statusClass}">
+                            <i class="${statusIcon} me-2"></i>
                             ${server.display_name}
-                            <span class="badge bg-primary rounded-pill float-end">${server.tool_count}</span>
+                            <span class="badge ${badgeClass} rounded-pill float-end">${server.tool_count}</span>
                         </div></li>
                     `;
                     

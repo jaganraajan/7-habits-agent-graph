@@ -287,8 +287,10 @@ class VisionBoardApp {
                 this.chatMessages.appendChild(welcomeMessage);
             }
             
-            this.addMessage('assistant', 'Hello! I\'m your 7 Habits AI assistant. I can help you with various tasks including creating vision board images. Try asking me to "generate a vision board image" or any other question!');
-            
+            this.addMessage(
+                'assistant',
+                "Hello! I'm your 7 Habits AI assistant. I can help you with various tasks including creating vision board images and managing your tasks using the task management MCP server. Try asking me to \"generate a vision board image\" or to \"add a new task to my schedule\" or any other question!"
+            );
         } catch (error) {
             console.error('Error starting new chat:', error);
             this.addMessage('assistant', 'Sorry, I encountered an error starting a new chat session. Please try again.');

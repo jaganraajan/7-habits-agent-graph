@@ -1212,3 +1212,22 @@ body, html {
 #mcpToolsMenu::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
+
+/* MCP Server Status Styling */
+#mcpToolsMenu .dropdown-item-text.fw-bold.text-success {
+    border-left: 3px solid #28a745;
+    padding-left: 0.75rem;
+}
+
+#mcpToolsMenu .dropdown-item-text.fw-bold.text-warning {
+    border-left: 3px solid #ffc107;
+    padding-left: 0.75rem;
+}
+
+#mcpToolsMenu .dropdown-header .text-success {
+    font-weight: 500;
+}
+
+#mcpToolsMenu .dropdown-header .text-warning {
+    font-weight: 500;
+}

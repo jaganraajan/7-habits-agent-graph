@@ -151,7 +151,7 @@ def api_habit4_summary():
 def api_habit5_summary():
     """Get the Habit 5 summary markdown content."""
     try:
-        summary_path = DATA_DIR / "habits" / "habit5_summary.md"
+        summary_path = DATA_DIR / "habits" / "habit5_listen.md"
         if summary_path.exists():
             with open(summary_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -173,7 +173,7 @@ def api_habit5_summary():
 def api_habit6_summary():
     """Get the Habit 6 summary markdown content."""
     try:
-        summary_path = DATA_DIR / "habits" / "habit6_summary.md"
+        summary_path = DATA_DIR / "habits" / "habit6_synergize.md"
         if summary_path.exists():
             with open(summary_path, 'r', encoding='utf-8') as f:
                 content = f.read()

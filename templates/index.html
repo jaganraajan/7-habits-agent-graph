@@ -96,9 +96,48 @@
                 <div class="eisenhower-section mt-4">
                     <div class="section-header">
                         <h4><i class="bi bi-grid-3x3"></i> Habit 3 - Eisenhower Matrix</h4>
+                        <button id="eisenhowerHelpBtn" class="btn btn-link btn-sm" style="vertical-align:top" title="What is the Eisenhower Matrix?">
+                            <i class="bi bi-question-circle"></i>
+                        </button>
                         <button id="refreshTodoBtn" class="btn btn-outline-success btn-sm ms-2">
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </button>
+                    </div>
+                    <div id="eisenhowerHelpModal" class="modal" tabindex="-1" style="display:none; position:fixed; z-index:1050; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgba(0,0,0,0.4);">
+                        <div class="modal-dialog" style="margin:10% auto; max-width:500px;">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="bi bi-question-circle"></i> About Habit 3 &amp; Eisenhower Matrix</h5>
+                                    <button type="button" id="eisenhowerHelpModalClose" class="btn-close" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>
+                                        <b>Habit 3: Put First Things First</b> is about personal management and prioritizing important tasks over merely urgent ones.
+                                    </p>
+                                    <p>
+                                        The <b>Eisenhower Matrix</b> helps you organize tasks by urgency and importance:
+                                        <ul>
+                                            <li><b>Do First</b>: Urgent & Important (immediate action)</li>
+                                            <li><b>Schedule</b>: Not Urgent but Important (plan time for these)</li>
+                                            <li><b>Delegate</b>: Urgent but Not Important (can be assigned)</li>
+                                            <li><b>Eliminate</b>: Not Urgent & Not Important (minimize)</li>
+                                        </ul>
+                                    </p>
+                                    <p>
+                                        <b>Examples for LLM/AI Projects:</b>
+                                        <ul>
+                                            <li><b>Do First:</b> Resolve a production outage in your AI model API.</li>
+                                            <li><b>Schedule:</b> Research new LLM fine-tuning methods, improve data pipelines, or write technical documentation.</li>
+                                            <li><b>Delegate:</b> Assign model evaluation runs or data labeling to team members.</li>
+                                            <li><b>Eliminate:</b> Avoid spending time on obsolete AI tools or speculative features with no stakeholder need.</li>
+                                        </ul>
+                                    </p>
+                                    <p>
+                                        <i>Tip: Use this matrix to focus your efforts on what matters most for your project's success!</i>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div id="todoLoading" class="text-center py-2" style="display: none;">
                         <div class="spinner-border spinner-border-sm text-primary" role="status">

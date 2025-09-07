@@ -864,6 +864,23 @@ class VisionBoardApp {
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.visionBoardApp = new VisionBoardApp();
+    const helpBtn = document.getElementById("eisenhowerHelpBtn");
+    const helpModal = document.getElementById("eisenhowerHelpModal");
+    const helpModalClose = document.getElementById("eisenhowerHelpModalClose");
+
+    if (helpBtn && helpModal && helpModalClose) {
+        helpBtn.addEventListener("click", function () {
+            helpModal.style.display = "block";
+        });
+        helpModalClose.addEventListener("click", function () {
+            helpModal.style.display = "none";
+        });
+        window.addEventListener("click", function (event) {
+            if (event.target === helpModal) {
+                helpModal.style.display = "none";
+            }
+        });
+    }
 });
 
 // Handle window resize for responsive layout

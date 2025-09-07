@@ -14,7 +14,6 @@
             <span class="navbar-brand mb-0 h1">
                 <i class="bi bi-diagram-3"></i> 7 Habits Agent Graph
             </span>
-            
             <span class="navbar-brand mb-0 h1">
                 Vision Board & AI Chat Interface <i class="bi bi-diagram-3"></i>
             </span>
@@ -451,97 +450,8 @@
     
     document.addEventListener('DOMContentLoaded', () => {
         loadTodos();
-        loadMCPTools();
         document.getElementById('refreshTodoBtn').addEventListener('click', loadTodos);
     });
-
-    // MCP Tools functionality
-    async function loadMCPTools() {
-        const mcpToolsMenu = document.getElementById('mcpToolsMenu');
-        const mcpToolsBadge = document.getElementById('mcpToolsBadge');
-        
-        try {
-            const response = await fetch('/api/mcp-tools');
-            const data = await response.json();
-            
-            if (response.ok && data.servers) {
-                // Update badge with total tool count
-                if (data.total_tools > 0) {
-                    mcpToolsBadge.textContent = data.total_tools;
-                    mcpToolsBadge.style.display = 'inline';
-                }
-                
-                // Clear loading content
-                mcpToolsMenu.innerHTML = '';
-                
-                if (data.servers.length === 0) {
-                    mcpToolsMenu.innerHTML = '<li><div class="dropdown-item-text text-muted">No MCP servers connected</div></li>';
-                    return;
-                }
-                
-                // Add summary header
-                mcpToolsMenu.innerHTML += `
-                    <li><h6 class="dropdown-header">
-                        <i class="bi bi-server me-1"></i>
-                        ${data.total_servers} Server${data.total_servers !== 1 ? 's' : ''} • ${data.total_tools} Tool${data.total_tools !== 1 ? 's' : ''}
-                    </h6></li>
-                    <li><hr class="dropdown-divider"></li>
-                `;
-                
-                // Add each server and its tools
-                data.servers.forEach((server, index) => {
-                    // Server header
-                    mcpToolsMenu.innerHTML += `
-                        <li><div class="dropdown-item-text fw-bold text-primary">
-                            <i class="bi bi-hdd-stack me-2"></i>
-                            ${server.display_name}
-                            <span class="badge bg-primary rounded-pill float-end">${server.tool_count}</span>
-                        </div></li>
-                    `;
-                    
-                    // Server tools
-                    if (server.tools.length > 0) {
-                        server.tools.forEach(tool => {
-                            const shortDescription = tool.description.length > 50 
-                                ? tool.description.substring(0, 47) + '...'
-                                : tool.description;
-                                
-                            mcpToolsMenu.innerHTML += `
-                                <li><div class="dropdown-item-text small ps-4">
-                                    <div class="fw-medium">${tool.name}</div>
-                                    <div class="text-muted" style="font-size: 0.75rem;">${shortDescription}</div>
-                                </div></li>
-                            `;
-                        });
-                    }
-                    
-                    // Add divider between servers (except for the last one)
-                    if (index < data.servers.length - 1) {
-                        mcpToolsMenu.innerHTML += '<li><hr class="dropdown-divider"></li>';
-                    }
-                });
-                
-            } else {
-                // Handle error case
-                mcpToolsMenu.innerHTML = `
-                    <li><div class="dropdown-item-text text-danger">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        Failed to load MCP tools
-                    </div></li>
-                `;
-            }
-            
-        } catch (error) {
-            console.error('Error loading MCP tools:', error);
-            mcpToolsMenu.innerHTML = `
-                <li><div class="dropdown-item-text text-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Error loading MCP tools
-                </div></li>
-            `;
-        }
-    }
-
     </script>
 </body>
 </html>

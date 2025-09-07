@@ -1,3 +1,4 @@
+// ...existing code...
 // 7 Habits Agent Graph Web UI JavaScript
 
 class VisionBoardApp {
@@ -623,6 +624,37 @@ class VisionBoardApp {
         `;
     }
 
+    // Habit 7 - Sharpen the Saw methods
+    async loadHabit7Summary() {
+        this.habit7Loading.style.display = 'block';
+        this.habit7Error.style.display = 'none';
+        this.habit7Markdown.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/habit7-summary');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.exists) {
+                    this.habit7Markdown.innerHTML = this.parseMarkdown(data.content);
+                } else {
+                    this.showHabit7Placeholder();
+                }
+            } else {
+                throw new Error('Failed to load summary');
+            }
+        } catch (error) {
+            console.error('Error loading Habit 7 summary:', error);
+            this.habit7Error.style.display = 'block';
+        } finally {
+            this.habit7Loading.style.display = 'none';
+        }
+    }
+
+    // Placeholder for Habit 7 if no summary exists
+    showHabit7Placeholder() {
+        this.habit7Markdown.innerHTML = '<em>No summary available for Habit 7 yet.</em>';
+    }
+
     parseMarkdown(content) {
         // Simple markdown parsing for basic formatting
         let html = content
@@ -651,7 +683,8 @@ class VisionBoardApp {
         return html;
     }
 
-    // Habits 4-7 methods
+
+    // Habits 4-7 methods (individual loaders)
     initHabits4567() {
         // Initialize variables for each habit
         for (let i = 4; i <= 7; i++) {
@@ -663,7 +696,6 @@ class VisionBoardApp {
             this[`habit${i}Markdown`] = document.getElementById(`habit${i}Markdown`);
             this[`habit${i}Expanded`] = false;
             this[`habit${i}Loaded`] = false;
-            
             // Ensure content starts collapsed
             this[`habit${i}Content`].classList.remove('expanded');
             this[`habit${i}Header`].classList.remove('expanded');
@@ -679,18 +711,21 @@ class VisionBoardApp {
 
     toggleHabit(habitNumber) {
         const expanded = this[`habit${habitNumber}Expanded`] = !this[`habit${habitNumber}Expanded`];
-        
         if (expanded) {
             this[`habit${habitNumber}Content`].classList.add('expanded');
             this[`habit${habitNumber}Header`].classList.add('expanded');
-            
             // Load content on first expand
             if (!this[`habit${habitNumber}Loaded`]) {
-                this.loadHabits4567Summary();
-                // Mark all as loaded since they share the same summary
-                for (let i = 4; i <= 7; i++) {
-                    this[`habit${i}Loaded`] = true;
+                if (habitNumber === 4) {
+                    this.loadHabit4Summary();
+                } else if (habitNumber === 5) {
+                    this.loadHabit5Summary();
+                } else if (habitNumber === 6) {
+                    this.loadHabit6Summary();
+                } else if (habitNumber === 7) {
+                    this.loadHabit7Summary();
                 }
+                this[`habit${habitNumber}Loaded`] = true;
             }
         } else {
             this[`habit${habitNumber}Content`].classList.remove('expanded');
@@ -698,74 +733,88 @@ class VisionBoardApp {
         }
     }
 
-    async loadHabits4567Summary() {
-        // Show loading for all habits
-        for (let i = 4; i <= 7; i++) {
-            this[`habit${i}Loading`].style.display = 'block';
-            this[`habit${i}Error`].style.display = 'none';
-            this[`habit${i}Markdown`].innerHTML = '';
-        }
-
+    // Individual loaders for habits 4, 5, 6, 7
+    async loadHabit4Summary() {
+        this.habit4Loading.style.display = 'block';
+        this.habit4Error.style.display = 'none';
+        this.habit4Markdown.innerHTML = '';
         try {
-            const response = await fetch('/api/habit4567-summary');
-            
+            const response = await fetch('/api/habit4-summary');
             if (response.ok) {
                 const data = await response.json();
                 if (data.exists) {
-                    this.parseAndDistributeHabits4567Content(data.content);
+                    this.habit4Markdown.innerHTML = this.parseMarkdown(data.content);
                 } else {
-                    this.showHabits4567Placeholder();
+                    this.showHabit4Placeholder();
                 }
             } else {
                 throw new Error('Failed to load summary');
             }
         } catch (error) {
-            console.error('Error loading Habits 4-7 summary:', error);
-            for (let i = 4; i <= 7; i++) {
-                this[`habit${i}Error`].style.display = 'block';
-            }
+            console.error('Error loading Habit 4 summary:', error);
+            this.habit4Error.style.display = 'block';
         } finally {
-            for (let i = 4; i <= 7; i++) {
-                this[`habit${i}Loading`].style.display = 'none';
+            this.habit4Loading.style.display = 'none';
+        }
+    }
+
+    async loadHabit5Summary() {
+        this.habit5Loading.style.display = 'block';
+        this.habit5Error.style.display = 'none';
+        this.habit5Markdown.innerHTML = '';
+        try {
+            const response = await fetch('/api/habit5-summary');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.exists) {
+                    this.habit5Markdown.innerHTML = this.parseMarkdown(data.content);
+                } else {
+                    this.showHabit5Placeholder();
+                }
+            } else {
+                throw new Error('Failed to load summary');
             }
+        } catch (error) {
+            console.error('Error loading Habit 5 summary:', error);
+            this.habit5Error.style.display = 'block';
+        } finally {
+            this.habit5Loading.style.display = 'none';
         }
     }
 
-    parseAndDistributeHabits4567Content(content) {
-        // Parse the full content and extract sections for each habit
-        const fullHtml = this.parseMarkdown(content);
-        
-        // Extract habit-specific sections
-        const habit4Content = this.extractHabitSection(fullHtml, 'Habit 4');
-        const habit5Content = this.extractHabitSection(fullHtml, 'Habit 5');
-        const habit6Content = this.extractHabitSection(fullHtml, 'Habit 6');  
-        const habit7Content = this.extractHabitSection(fullHtml, 'Habit 7');
-        
-        // Display content for each habit
-        this.habit4Markdown.innerHTML = habit4Content || this.getHabitPlaceholder(4);
-        this.habit5Markdown.innerHTML = habit5Content || this.getHabitPlaceholder(5);
-        this.habit6Markdown.innerHTML = habit6Content || this.getHabitPlaceholder(6);
-        this.habit7Markdown.innerHTML = habit7Content || this.getHabitPlaceholder(7);
-    }
-
-    extractHabitSection(html, habitTitle) {
-        // Extract content between habit headers
-        const regex = new RegExp(`<h2[^>]*>.*?${habitTitle}.*?</h2>(.*?)(?=<h2|$)`, 'is');
-        const match = html.match(regex);
-        return match ? `<h2>${habitTitle}</h2>${match[1]}` : null;
-    }
-
-    showHabits4567Placeholder() {
-        const placeholders = {
-            4: this.getHabitPlaceholder(4),
-            5: this.getHabitPlaceholder(5),
-            6: this.getHabitPlaceholder(6),
-            7: this.getHabitPlaceholder(7)
-        };
-        
-        for (let i = 4; i <= 7; i++) {
-            this[`habit${i}Markdown`].innerHTML = placeholders[i];
+    async loadHabit6Summary() {
+        this.habit6Loading.style.display = 'block';
+        this.habit6Error.style.display = 'none';
+        this.habit6Markdown.innerHTML = '';
+        try {
+            const response = await fetch('/api/habit6-summary');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.exists) {
+                    this.habit6Markdown.innerHTML = this.parseMarkdown(data.content);
+                } else {
+                    this.showHabit6Placeholder();
+                }
+            } else {
+                throw new Error('Failed to load summary');
+            }
+        } catch (error) {
+            console.error('Error loading Habit 6 summary:', error);
+            this.habit6Error.style.display = 'block';
+        } finally {
+            this.habit6Loading.style.display = 'none';
         }
+    }
+
+    // Placeholders for each habit
+    showHabit4Placeholder() {
+        this.habit4Markdown.innerHTML = this.getHabitPlaceholder(4);
+    }
+    showHabit5Placeholder() {
+        this.habit5Markdown.innerHTML = this.getHabitPlaceholder(5);
+    }
+    showHabit6Placeholder() {
+        this.habit6Markdown.innerHTML = this.getHabitPlaceholder(6);
     }
 
     getHabitPlaceholder(habitNumber) {

@@ -125,12 +125,11 @@ def api_habit1_summary():
         print(f"Error loading habit1 summary: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/habit4567-summary')
-def api_habit4567_summary():
-    """Get the Habits 4-7 collaborative growth summary markdown content."""
+@app.route('/api/habit4-summary')
+def api_habit4_summary():
+    """Get the Habit 4 summary markdown content."""
     try:
-        summary_path = DATA_DIR / "habits" / "habit4567_summary.md"
-        
+        summary_path = DATA_DIR / "habits" / "habit4_summary.md"
         if summary_path.exists():
             with open(summary_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -142,10 +141,76 @@ def api_habit4567_summary():
         else:
             return jsonify({
                 "exists": False,
-                "message": "Summary not yet generated. Run the habit4567-summary workflow to create it."
+                "message": "Summary not yet generated. Run the habit4 workflow to create it."
             })
     except Exception as e:
-        print(f"Error loading habit4567 summary: {e}")
+        print(f"Error loading habit4 summary: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/habit5-summary')
+def api_habit5_summary():
+    """Get the Habit 5 summary markdown content."""
+    try:
+        summary_path = DATA_DIR / "habits" / "habit5_summary.md"
+        if summary_path.exists():
+            with open(summary_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return jsonify({
+                "exists": True,
+                "content": content,
+                "last_modified": datetime.fromtimestamp(summary_path.stat().st_mtime).isoformat()
+            })
+        else:
+            return jsonify({
+                "exists": False,
+                "message": "Summary not yet generated. Run the habit5 workflow to create it."
+            })
+    except Exception as e:
+        print(f"Error loading habit5 summary: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/habit6-summary')
+def api_habit6_summary():
+    """Get the Habit 6 summary markdown content."""
+    try:
+        summary_path = DATA_DIR / "habits" / "habit6_summary.md"
+        if summary_path.exists():
+            with open(summary_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return jsonify({
+                "exists": True,
+                "content": content,
+                "last_modified": datetime.fromtimestamp(summary_path.stat().st_mtime).isoformat()
+            })
+        else:
+            return jsonify({
+                "exists": False,
+                "message": "Summary not yet generated. Run the habit6 workflow to create it."
+            })
+    except Exception as e:
+        print(f"Error loading habit6 summary: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/habit7-summary')
+def api_habit7_summary():
+    """Get the Habit 7 summary markdown content."""
+    try:
+        summary_path = DATA_DIR / "habits" / "habit7_sharpen.md"
+        if summary_path.exists():
+            with open(summary_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return jsonify({
+                "exists": True,
+                "content": content,
+                "last_modified": datetime.fromtimestamp(summary_path.stat().st_mtime).isoformat()
+            })
+        else:
+            return jsonify({
+                "exists": False,
+                "message": "Summary not yet generated. Run the habit7 workflow to create it."
+            })
+    except Exception as e:
+        print(f"Error loading habit7 summary: {e}")
         return jsonify({"error": str(e)}), 500
     
 @app.route('/api/chat', methods=['POST'])

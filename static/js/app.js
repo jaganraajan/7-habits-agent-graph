@@ -322,7 +322,6 @@ class VisionBoardApp {
             });
 
             const data = await response.json();
-            
             if (response.ok) {
                 this.currentSessionId = data.session_id;
                 this.addMessage('assistant', data.response);
@@ -589,7 +588,9 @@ class VisionBoardApp {
             if (response.ok) {
                 const data = await response.json();
                 if (data.exists) {
-                    this.habit1Markdown.innerHTML = this.parseMarkdown(data.content);
+                    let cleanedContent = data.content.replace(/⭐\s*0\s*\|\s*Unknown/g, '');
+                    cleanedContent = cleanedContent.replace(/\(Unknown\)/g, '');
+                    this.habit1Markdown.innerHTML = this.parseMarkdown(cleanedContent);
                 } else {
                     this.showHabit1Placeholder();
                 }

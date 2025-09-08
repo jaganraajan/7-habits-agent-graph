@@ -17,6 +17,15 @@ This is a fun sandbox I customized to improve my skills in LangGraph. The sandbo
 Tools can be added via the tools/ dir as well as via the mcp_config file. MCP Servers are setup during startup and are made available via the mcp_registry.
 Langfuse is integrated as a callback for observability by the graph_manager. It is also integrated for prompt management, existing graphs currently require a prompt key. 
 
+## Architecture and Demos
+
+<img width="781" height="501" alt="7habits_architecture" src="https://github.com/user-attachments/assets/2b4aba40-3cf8-40a9-8a39-59ddd6df9e48" />
+
+<img width="1432" height="808" alt="Screenshot 2025-09-08 at 9 04 32 AM" src="https://github.com/user-attachments/assets/e572d21e-c35a-486f-af58-92ce8276262f" />
+<img width="1432" height="808" alt="Screenshot 2025-09-08 at 9 04 32 AM" src="https://github.com/user-attachments/assets/c68fa778-0edf-4aac-8c76-9e554929aaba" />
+
+<img width="1432" height="808" alt="7habits_langfuse" src="https://github.com/user-attachments/assets/c73df2a2-3d82-4089-9caf-9bb30b404d25" />
+
 ## Quick Start
 
 ### 1. Install Dependencies
